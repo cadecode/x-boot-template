@@ -1,2 +1,9 @@
+# server
 server:
   port: 8080
+
+# log
+logging:
+  file:
+    path: /log/${spring.application.name}/
+
