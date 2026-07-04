@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>x-boot-server-main</artifactId>
-    <description>admin 服务</description>
+    <description>主服务</description>
 
     <properties>
     </properties>

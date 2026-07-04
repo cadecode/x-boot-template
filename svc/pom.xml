@@ -156,7 +156,7 @@
             </plugin>-->
             <!--jasypt 配置加密插件-->
             <!--mvn jasypt:encrypt \
-                -D'jasypt.plugin.path'="file:xboot-admin/src/main/resources/application.yaml" \
+                -D'jasypt.plugin.path'="file:xboot-main/src/main/resources/application.yaml" \
                 -D'jasypt.encryptor.password'="the password"-->
             <plugin>
                 <groupId>com.github.ulisesbocchio</groupId>
