@@ -1,7 +1,7 @@
 # Spring State Machine 使用指南
 
 > 依赖：`spring-statemachine-core`（已在 `svc/common/pom.xml` 中声明，版本见 `svc/dependency/pom.xml`）  
-> 可运行测试：`svc/server/admin/src/test/.../admin/state/StateTests.java`
+> 可运行测试：`svc/server/main/src/test/.../main/demo/state/StateTests.java`
 
 ## 1. 快速开始
 
@@ -251,8 +251,8 @@ public class OrderListener {
 ## 7. 可运行测试
 
 ```bash
-cd svc && mvn test -pl server/admin \
-  -Dtest="com.github.cadecode.xboot.admin.status.StateMachineTests"
+cd svc && mvn test -pl server/main \
+  -Dtest="com.github.cadecode.xboot.main.demo.state.StateTests"
 ```
 
 测试覆盖：正常流转 S1→S2→S3→S4、非法事件拒绝、取消流程、已前进后禁取消。

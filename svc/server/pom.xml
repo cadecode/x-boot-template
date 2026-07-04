@@ -14,7 +14,7 @@
     <description>后端服务</description>
 
     <modules>
-        <module>admin</module>
+        <module>main</module>
     </modules>
 
 </project>
