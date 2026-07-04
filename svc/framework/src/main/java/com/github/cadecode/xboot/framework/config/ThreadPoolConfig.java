@@ -34,14 +34,20 @@ public class ThreadPoolConfig {
      */
     @Bean(name = "taskScheduler")
     public ThreadPoolTaskScheduler taskScheduler() {
+        int poolSize = Runtime.getRuntime().availableProcessors();
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(Runtime.getRuntime().availableProcessors());
+        scheduler.setPoolSize(poolSize);
         scheduler.setThreadNamePrefix("taskScheduler-");
-        scheduler.setWaitForTasksToCompleteOnShutdown(true);
-        scheduler.setAwaitTerminationSeconds(30);
         scheduler.setErrorHandler(throwable -> {
             log.error("Scheduled task execute fail,", throwable);
         });
+        // shutdown 等待
+        scheduler.setWaitForTasksToCompleteOnShutdown(true);
+        scheduler.setAwaitTerminationSeconds(30);
+        // 不在此调用 initialize()，由 Spring afterPropertiesSet() 自动触发
+        // scheduler.initialize();
+        log.info("taskScheduler initialized: poolSize={}, threadNamePrefix={}",
+                poolSize, scheduler.getThreadNamePrefix());
         return scheduler;
     }
 
@@ -58,17 +64,26 @@ public class ThreadPoolConfig {
      */
     @Bean(name = "asyncExecutor")
     public ThreadPoolTaskExecutor asyncExecutor() {
+        int corePoolSize = 16;
+        int maxPoolSize = 32;
+        int queueCapacity = 10000;
+        int keepAliveSeconds = 60;
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(16);
-        executor.setMaxPoolSize(32);
-        executor.setQueueCapacity(10000);
-        executor.setKeepAliveSeconds(60);
+        executor.setCorePoolSize(corePoolSize);
+        executor.setMaxPoolSize(maxPoolSize);
+        executor.setQueueCapacity(queueCapacity);
+        executor.setKeepAliveSeconds(keepAliveSeconds);
         executor.setThreadNamePrefix("async-task-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setAwaitTerminationSeconds(30);
         // 允许核心线程超时销毁
         executor.setAllowCoreThreadTimeOut(true);
-        executor.initialize();
+        // shutdown 等待
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
+        // 不在此调用 initialize()，由 Spring afterPropertiesSet() 自动触发
+        // executor.initialize();
+        log.info("asyncExecutor initialized: corePool={}, maxPool={}, queueCapacity={}, keepAlive={}s, threadNamePrefix={}",
+                corePoolSize, maxPoolSize, queueCapacity, keepAliveSeconds, executor.getThreadNamePrefix());
         return executor;
     }
 
