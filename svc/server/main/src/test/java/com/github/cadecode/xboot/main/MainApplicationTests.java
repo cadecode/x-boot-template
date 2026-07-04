@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
- * admin 服务测试类
+ * main 服务测试类
  *
  * @author Cade Li
  * @since 2024/4/25
