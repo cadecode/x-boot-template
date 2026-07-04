@@ -327,7 +327,7 @@ Plugin 支持两种 `PluginContext` 实现模式：直接实现 `PluginContext` 
 
 > 📖 **详细使用指南**：`extension/state/README.md`，涵盖配置、注解/编程式监听、Interceptor 钩子、Guard/Action、扩展状态传参等完整用法。
 
-> ✅ **可运行测试**：`svc/server/admin/src/test/java/com/github/cadecode/xboot/admin/state/StateTests.java`
+> ✅ **可运行测试**：`svc/server/main/src/test/java/com.github.cadecode.xboot.main.demo.state.StateTests.java`
 
 ---
 
@@ -416,19 +416,17 @@ common/src/main/java/.../extension/
 └── state/
     └── README.md                          # Spring State Machine 使用指南
 
-server/admin/src/main/java/.../admin/
-├── config/
-│   ├── PipelineTestProperties.java       # 业务模块示例：自己的 YAML Properties
-│   └── PipelineTestConfig.java           # 注册 Properties
-└── pipeline/                             # Filter 实现示例
-    ├── TestFilter1/2/3.java
-    ├── TestContext.java
-    └── TestType.java
-
-server/admin/src/test/java/.../admin/
-└── state/                                # StateMachine Demo
-    ├── StateTestState.java                     # 状态枚举
-    ├── StateTestEvent.java                     # 事件枚举
-    ├── StateTestStateMachineConfig.java        # @EnableStateMachineFactory 配置
-    └── StateTests.java                # 测试
+server/main/src/test/java/.../main/demo/
+├── pipeline/                              # Pipeline Demo
+│   ├── PipelineTests.java                 #   测试
+│   ├── PipelineTestConfig.java            #   @TestConfiguration
+│   ├── PipelineTestProperties.java        #   YAML Properties
+│   ├── PipelineTestContext.java           #   上下文
+│   ├── PipelineTestFilterA/B/C.java       #   Filter 实现
+│   └── PipelineTestType.java              #   类型枚举
+└── state/                                 # StateMachine Demo
+    ├── StateTests.java                    #   测试
+    ├── StateTestConfig.java               #   @TestConfiguration + @EnableStateMachineFactory
+    ├── StateTestState.java                #   状态枚举
+    └── StateTestEvent.java                #   事件枚举
 ```
