@@ -1,432 +1,68 @@
 # Extension 工具使用指南
 
-`svc/common/.../extension/` 封装了两套设计模式工具，用于构建可扩展的业务逻辑。
+`svc/common/.../extension/` 封装了四套设计模式工具，用于构建可扩展的业务逻辑。
 
-| 工具 | 模式 | 基础 | 适用场景 |
-|------|------|------|---------|
-| **Pipeline** | 责任链（Chain of Responsibility） | 自研 Filter 链表 | 流程化逻辑拆分，多个处理单元按序执行 |
-| **Plugin** | 策略模式（Strategy） | Spring Plugin Framework | 多种算法/策略动态切换 |
-| **StateMachine** | 有限状态机（Finite State Machine） | Spring State Machine | 状态流转规则化，保证状态转换正确性 |
-
----
-
-## 1. Pipeline（责任链）
-
-### 1.1 角色定义
-
-| 角色 | 接口/类 | 职责 |
-|------|---------|------|
-| 上下文 | `PipelineContext` | 封装请求参数、输出模型、业务类型、FilterSelector |
-| 上下文抽象 | `AbstractPipelineContext` | 提供 `pipelineType` + `filterSelector` 构造注入 |
-| 过滤器 | `PipelineFilter<T>` | 处理单元：`doFilter(context, chain)` |
-| 过滤器抽象 | `AbstractPipelineFilter<T>` | 模板方法：Selector 匹配 → `handle()` → chain 传递 |
-| 过滤器链 | `PipelineFilterChain` | 链表接口：`filter()` + `next()` |
-| 过滤器链实现 | `DefaultPipelineFilterChain` | 链表节点，持有当前 filter + 下一节点指针 |
-| 管道构建执行器 | `PipelineExecutor` | `appendFilter()` 构建链表，`execute()` 执行链 |
-| 过滤器选择器 | `FilterSelector` | 运行时决定哪些 filter 生效：`matchFilter(name)` |
-| 业务类型 | `ExtensionType` | Marker 接口：`getType()` 返回业务标识 |
-
-### 1.2 使用方式
-
-#### 方式一：编程式（手工编排）
-
-适用于 filter 少、不需要动态配置的简单场景。
-
-**Step 1：定义 Context**
-
-```java
-// 业务类型枚举
-@Getter
-public enum OrderCodeEnum implements ExtensionType {
-    PLACE_ORDER("ORDER"),
-    CANCEL_ORDER("CANCEL");
-
-    private final String type;
-    OrderCodeEnum(String type) { this.type = type; }
-}
-
-// 上下文
-@Getter
-@Setter
-public class OrderContext extends AbstractPipelineContext {
-    private boolean continueChain = true;
-    private OrderParam param;
-    private OrderModel model;
-
-    public OrderContext(ExtensionType pipelineType, FilterSelector filterSelector) {
-        super(pipelineType, filterSelector);
-    }
-
-    @Override
-    public boolean continueChain() { return continueChain; }
-}
-```
-
-**Step 2：实现 Filter**
-
-```java
-@Component
-public class CheckOrderFilter extends AbstractPipelineFilter<OrderContext> {
-    @Override
-    public void handle(OrderContext context) {
-        OrderModel model = context.getModel();
-        if (model == null) {
-            context.setContinueChain(false);
-            return;
-        }
-        System.out.println("校验通过");
-    }
-}
-```
-
-**Step 3：手工编排执行**
-
-```java
-// 构建 Pipeline
-PipelineExecutor<OrderContext> executor = new PipelineExecutor<>();
-executor.appendFilter(new SaveOrderFilter(), "保存订单");
-executor.appendFilter(new QueryOrderFilter(), "查询信息");
-executor.appendFilter(new CheckOrderFilter(), "校验订单");
-
-// 构造选择器（选哪些 filter 生效）
-LocalListFilterSelector selector = new LocalListFilterSelector(
-    List.of("SaveOrderFilter", "QueryOrderFilter", "CheckOrderFilter"));
-
-// 创建上下文并执行
-OrderContext context = new OrderContext(OrderCodeEnum.PLACE_ORDER, selector);
-context.setParam(orderParam);
-executor.execute(context);
-
-// 获取处理结果
-OrderModel model = context.getModel();
-```
-
-#### 方式二：YAML 启用控制 ✨ 推荐
-
-开发时固定 filter 顺序，每个业务模块在自己的 YAML 中配置启用哪些 filter。通过 `FilterSelectorFactory` 静态工具解析。
-
-**Step 1：开发时构建 Pipeline（固定顺序）**
-
-```java
-// Filter 实现
-@Component
-public class SaveOrderFilter extends AbstractPipelineFilter<OrderContext> {
-    @Override
-    public void handle(OrderContext context) {
-        System.out.println("保存下单请求");
-    }
-}
-```
-
-```java
-// Pipeline 配置：开发时确定 filter 顺序
-@Configuration
-public class OrderPipelineConfig {
-    @Bean
-    public PipelineExecutor<OrderContext> orderPipeline(
-            SaveOrderFilter saveFilter,
-            QueryOrderFilter queryFilter,
-            CheckOrderFilter checkFilter) {
-        PipelineExecutor<OrderContext> gen = new PipelineExecutor<>();
-        gen.appendFilter(saveFilter, "保存订单");    // desc + 固定顺序
-        gen.appendFilter(queryFilter, "查询信息");
-        gen.appendFilter(checkFilter, "校验订单");
-        return gen;
-    }
-}
-```
-
-**Step 2：YAML 配置启用/禁用（业务模块自己的 prefix）**
-
-```yaml
-order:
-  pipeline:
-    filter-selectors:
-      ORDER:                        # 只配启用的 filter
-        - SaveOrderFilter
-        - CheckOrderFilter
-        # QueryOrderFilter 未列出 = 禁用
-      CHARGE:
-        - QueryOrderFilter
-```
-
-```java
-// 业务模块维护自己的 Properties
-@Data
-@ConfigurationProperties(prefix = "order.pipeline")
-public class OrderPipelineProperties {
-    private Map<String, List<String>> filterSelectors;
-}
-```
-
-> YAML 列表只控制启用/禁用，不控制顺序。顺序由 `PipelineExecutor.appendFilter()` 调用顺序决定。
-
-**Step 3：通过 FilterSelectorFactory 静态方法创建 selector，PipelineExecutor 执行**
-
-```java
-@Autowired
-private PipelineExecutor<OrderContext> orderPipeline;
-@Autowired
-private OrderPipelineProperties props;
-
-public void placeOrder(OrderParam param) {
-    // 调用 common 的静态工厂方法，传入业务的 filter-selectors
-    FilterSelector selector = FilterSelectorFactory.createFilterSelector(
-            OrderCodeEnum.PLACE_ORDER.getType(), props.getFilterSelectors());
-
-    OrderContext context = new OrderContext(OrderCodeEnum.PLACE_ORDER, selector);
-    context.setParam(param);
-
-    orderPipeline.execute(context);
-    OrderModel model = context.getModel();
-}
-```
-
-| Selector 类型 | YAML 配置情况 | 行为 |
-|-------------|------------|------|
-| `LocalListFilterSelector` | type 在 YAML 中有配置 | 只匹配 YAML 中列出的 filter 名 |
-| `MatchAllFilterSelector` | type 配置为 `on` | 全部 filter 生效 |
-| `DummyFilterSelector` | type 配置为 `off` | 全部 filter 禁用 |
-| — | type 未在 YAML 中配置 | 抛出 ExtensionException |
-
-### 1.3 FilterSelector 说明
-
-| Selector | 行为 | 使用场景 |
-|----------|------|---------|
-| `LocalListFilterSelector` | 基于列表的选择器 | 编程式或声明式，精确控制哪些 filter 生效 |
-| `MatchAllFilterSelector` | `matchFilter(name)` 始终返回 true | 无过滤需求时使用 |
-| `DummyFilterSelector` | `matchFilter(name)` 始终返回 false | 禁用所有 filter 时使用 |
-
-> **扩展数据源**：`FilterSelectorFactory.createFilterSelector(type, map)` 接收 `Map<String, List<String>>`，与来源无关。从 YAML、DB、Nacos 加载的数据只要转成 Map 即可传入，无需自定义 Selector。如确需自定义，实现 `FilterSelector` 接口的两个方法即可。
-
-> `AbstractPipelineFilter.doFilter()` 模板会先调用 `context.getFilterSelector().matchFilter(name)`，只有匹配时才执行 `handle()`。
-
-### 1.4 中断链
-
-在 `handle()` 中调用 `context.setContinueChain(false)` 即可中断后续 filter 执行：
-
-```java
-@Override
-public void handle(OrderContext context) {
-    if (invalid) {
-        context.setContinueChain(false);  // 校验不通过，后续 filter 不再执行
-        return;
-    }
-    // 正常处理...
-}
-```
+| 工具 | 模式 | 基础 | 适用场景 | 详细文档 |
+|------|------|------|---------|---------|
+| **Pipeline** | 责任链 | 自研 Filter 链表 | 流程化逻辑拆分，多个处理单元按序执行 | `pipeline/README.md` |
+| **Plugin** | 策略模式 | Spring Plugin Framework | 多种算法/策略动态切换 | `plugin/README.md` |
+| **StateMachine** | 有限状态机 | Spring State Machine | 状态流转规则化，保证状态转换正确性 | `state/README.md` |
+| **Event** | 观察者 | Spring Event | 模块解耦通信，同步/异步/事务事件 | `event/README.md` |
 
 ---
 
-## 2. Plugin（策略模式）
+## 对比
 
-基于 Spring Plugin Framework，通过 `Plugin.supports()` 运行时匹配策略。
-
-### 2.1 角色定义
-
-| 角色 | 接口/类 | 职责 |
-|------|---------|------|
-| 插件服务 | `PluginService extends Plugin<PluginContext>` | 策略接口，继承 Spring Plugin 的 `supports()` |
-| 插件上下文 | `PluginContext` | 携带 `getPluginType()` 供匹配 |
-| 业务类型 | `ExtensionType` | 与 Pipeline 共用，`getType()` 返回类型标识 |
-| 插件执行器 | `PluginExecutor` | 接口：`execute()` / `executeAll()` / `submit()` / `submitAll()` |
-| 选择执行器 | `PluginSelectorExecutor` | 核心实现：遍历 pluginRegistry，`filter(o -> o.supports(context))` 选择策略 |
-
-### 2.2 使用方式
-
-**Step 1：定义 Plugin 接口**
-
-```java
-public interface PayPlugin extends PluginService {
-    void pay(OrderModel model);
-}
-```
-
-**Step 2：实现策略**
-
-```java
-@Component
-public class AliPayPlugin implements PayPlugin {
-    @Override
-    public boolean supports(PluginContext context) {
-        return PayTypeEnum.ALIPAY.equals(context.getPluginType());
-    }
-
-    @Override
-    public void pay(OrderModel model) {
-        System.out.println("支付宝支付");
-    }
-}
-
-@Component
-public class WeChatPayPlugin implements PayPlugin {
-    @Override
-    public boolean supports(PluginContext context) {
-        return PayTypeEnum.WECHAT.equals(context.getPluginType());
-    }
-
-    @Override
-    public void pay(OrderModel model) {
-        System.out.println("微信支付");
-    }
-}
-```
-
-**Step 3：注册 Plugin Registry（在 Application 类上）**
-
-```java
-@SpringBootApplication
-@EnablePluginRegistries({PayPlugin.class})
-public class AdminApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(AdminApplication.class, args);
-    }
-}
-```
-
-**Step 4：通过 PluginSelectorExecutor 调用**
-
-```java
-@Autowired
-private PluginSelectorExecutor pluginExecutor;
-
-public void doPay(OrderModel model, PayTypeEnum payType) {
-    PluginContext context = new PluginContextImpl(payType);  // PluginContext 实现
-
-    // 执行匹配的第一个插件
-    pluginExecutor.execute(PayPlugin.class, context, plugin -> {
-        plugin.pay(model);
-    });
-
-    // 或提交后获取返回值
-    String result = pluginExecutor.submit(PayPlugin.class, context,
-        PayPlugin::getPayUrl);
-}
-```
-
-**内部机制**：`PluginSelectorExecutor.selectService()` 遍历 `pluginRegistry` 中所有 bean，调用 `plugin.supports(context)` 找到匹配的插件（引用 `context.getPluginType()` 判断）。
-
-### 2.3 适配两种上下文
-
-Plugin 支持两种 `PluginContext` 实现模式：直接实现 `PluginContext` 接口，或通过 `AbstractPluginContext` 继承。业务可根据需要选择。详见 Plugin 模块源码。
+| 维度 | Pipeline | Plugin | StateMachine | Event |
+|------|----------|--------|-------------|-------|
+| 模式 | 责任链 | 策略 | 有限状态机 | 观察者 |
+| 核心操作 | 多个 filter **依次处理** | 选择一个 plugin **执行替代** | 定义转换规则，**保证流程正确** | **发布-订阅**，解耦通信 |
+| 输出 | 链式处理，模型逐渐完善 | 策略返回结果 | 状态流转，Guard/Action | 通知、日志、缓存更新 |
+| 匹配方式 | YAML 控制启用/禁用 | `supports(context)` 动态匹配 | 事件驱动，非法自动拒绝 | 事件类型匹配 |
+| 典型场景 | 订单下单流程、审批流 | 支付方式切换、通知渠道 | 订单状态流转、审批工作流 | 跨模块通知、异步日志 |
 
 ---
 
-## 3. StateMachine（状态机）
-
-基于 Spring State Machine，定义状态转换规则，框架保证状态流转的正确性。
-
-| 角色 | 接口/类 | 职责 |
-|------|---------|------|
-| 状态/事件枚举 | 业务自定义 `enum` | 定义状态和触发事件 |
-| 状态机配置 | `StateMachineConfigurerAdapter` | 定义转换规则 + Guard/Action |
-| 状态机工厂 | `StateMachineFactory<S,E>` | 通过 `@EnableStateMachineFactory` 创建，每次返回新实例 |
-| 拦截器 | `StateMachineInterceptor` | 转换前/后的回调钩子 |
-
-核心要素：State（状态）、Event（事件）、Transition（转换规则）、Guard（条件守卫）、Action（转换动作）。
-
-> 📖 **详细使用指南**：`extension/state/README.md`，涵盖配置、注解/编程式监听、Interceptor 钩子、Guard/Action、扩展状态传参等完整用法。
-
-> ✅ **可运行测试**：`svc/server/main/src/test/java/com.github.cadecode.xboot.main.demo.state.StateTests.java`
-
----
-
-## 4. Pipeline vs Plugin vs StateMachine
-
-| 维度 | Pipeline | Plugin | StateMachine |
-|------|----------|--------|-------------|
-| 模式 | 责任链 | 策略 | 有限状态机 |
-| 核心操作 | 多个 filter **依次处理** | 选择一个 plugin **执行替代** | 定义转换规则，**保证流程正确** |
-| 输出 | 链式处理，模型逐渐完善 | 策略返回结果 | 状态流转，Guard/Action |
-| 匹配方式 | YAML 控制启用/禁用 | `supports(context)` 动态匹配 | 事件驱动，非法自动拒绝 |
-| 典型场景 | 订单下单流程、审批流 | 支付方式切换、通知渠道 | 订单状态流转、审批工作流 |
-| 可组合 | ✅ 多个 filter 叠加 | ❌ 通常只选一个 | ✅ 状态+Guard+Action |
-
----
-
-## 5. API 速查
-
-### Pipeline
-
-```java
-// PipelineFilter 接口
-public interface PipelineFilter<T extends PipelineContext> {
-    void doFilter(T context, PipelineFilterChain<T> chain);
-}
-
-// PipelineExecutor 构建 + 执行
-PipelineExecutor<T> gen = new PipelineExecutor<>();
-gen.appendFilter(filter, "desc");
-gen.execute(context);
-
-// FilterSelectorFactory（静态工具）
-FilterSelector selector = FilterSelectorFactory.createFilterSelector(
-    type.getType(), props.getFilterSelectors());
-```
-
-### Plugin
-
-```java
-// PluginService 接口
-public interface PluginService extends Plugin<PluginContext> { }
-
-// PluginSelectorExecutor 调用
-pluginExecutor.execute(PluginClass.class, context, plugin -> { ... });
-pluginExecutor.submit(PluginClass.class, context, PluginClass::method);
-```
-
-### StateMachine
-
-```java
-// 状态机工厂创建实例
-StateMachine<OrderState, OrderEvent> sm = factory.getStateMachine();
-sm.start();
-sm.sendEvent(OrderEvent.PAY);  // 合法事件 → 状态转换
-sm.stop();
-```
-
----
-
-## 6. 项目结构
+## 项目结构
 
 ```
 common/src/main/java/.../extension/
 ├── pipeline/
-│   ├── PipelineContext.java              # Pipeline 上下文接口
-│   ├── AbstractPipelineContext.java      # 上下文抽象实现
-│   ├── PipelineFilter.java               # Filter 接口
-│   ├── AbstractPipelineFilter.java       # Filter 模板类
-│   ├── PipelineFilterChain.java          # Filter 链接口
-│   ├── DefaultPipelineFilterChain.java   # Filter 链实现
-│   ├── PipelineExecutor.java             # 构建器 + 执行器
+│   ├── README.md                          # Pipeline 使用指南
+│   ├── PipelineContext.java
+│   ├── PipelineFilter.java
+│   ├── PipelineExecutor.java
 │   └── selector/
-│       ├── FilterSelector.java           # 选择器接口
-│       ├── LocalListFilterSelector.java  # 基于本地列表的选择器
-│       ├── MatchAllFilterSelector.java   # 全匹配选择器
-│       ├── DummyFilterSelector.java      # 全禁用选择器
-│       └── FilterSelectorFactory.java    # 静态工具，按 type + Map 创建 Selector
-└── plugin/
-    ├── PluginService.java                # 插件服务接口
-    ├── PluginContext.java                # 插件上下文接口
-    ├── PluginExecutor.java               # 插件执行器接口
-    ├── AbstractPluginExecutor.java       # 执行器抽象
-    ├── PluginSelectorExecutor.java       # 基于 Spring Plugin Registry 的执行器
-    └── config/
-        └── PluginAutoConfig.java         # 插件自动配置
-└── state/
-    └── README.md                          # Spring State Machine 使用指南
+│       ├── FilterSelector.java
+│       ├── LocalListFilterSelector.java
+│       ├── MatchAllFilterSelector.java
+│       ├── DummyFilterSelector.java
+│       └── FilterSelectorFactory.java
+├── plugin/
+│   ├── README.md                          # Plugin 使用指南
+│   ├── PluginService.java
+│   ├── PluginContext.java
+│   ├── PluginExecutor.java
+│   └── PluginSelectorExecutor.java
+├── state/
+│   └── README.md                          # StateMachine 使用指南
+└── event/
+    └── README.md                          # Spring Event 使用指南
 
 server/main/src/test/java/.../main/demo/
-├── pipeline/                              # Pipeline Demo
-│   ├── PipelineTests.java                 #   测试
-│   ├── PipelineTestConfig.java            #   @TestConfiguration
-│   ├── PipelineTestProperties.java        #   YAML Properties
-│   ├── PipelineTestContext.java           #   上下文
-│   ├── PipelineTestFilterA/B/C.java       #   Filter 实现
-│   └── PipelineTestType.java              #   类型枚举
-└── state/                                 # StateMachine Demo
-    ├── StateTests.java                    #   测试
-    ├── StateTestConfig.java               #   @TestConfiguration + @EnableStateMachineFactory
-    ├── StateTestState.java                #   状态枚举
-    └── StateTestEvent.java                #   事件枚举
+├── pipeline/                              # Pipeline Demo（15 tests）
+│   ├── PipelineTests.java
+│   ├── PipelineTestConfig.java
+│   └── ...
+├── state/                                 # StateMachine Demo（4 tests）
+│   ├── StateTests.java
+│   ├── StateTestConfig.java
+│   └── ...
+├── event/                                 # Event Demo（4 tests）
+│   ├── EventTests.java
+│   ├── EventTestListener.java
+│   └── ...
+└── plugin/                                 # Plugin Demo（3 tests）
+    ├── PluginTests.java
+    └── ...
 ```
