@@ -25,6 +25,7 @@
         <swagger.version>2.2.19</swagger.version>
         <knife4j.version>4.4.0</knife4j.version>
         <spring-plugin.version>2.0.0.RELEASE</spring-plugin.version>
+        <spring-statemachine.version>4.0.0</spring-statemachine.version>
         <jasypt.version>3.0.5</jasypt.version>
         <ttl.version>2.12.2</ttl.version>
         <!--插件配置-->
@@ -147,6 +148,12 @@
                 <groupId>org.springframework.plugin</groupId>
                 <artifactId>spring-plugin-core</artifactId>
                 <version>${spring-plugin.version}</version>
+            </dependency>
+            <!--spring state machine-->
+            <dependency>
+                <groupId>org.springframework.statemachine</groupId>
+                <artifactId>spring-statemachine-core</artifactId>
+                <version>${spring-statemachine.version}</version>
             </dependency>
             <!--jasypt-->
             <dependency>
