@@ -6,6 +6,7 @@
 |------|------|------|---------|
 | **Pipeline** | 责任链（Chain of Responsibility） | 自研 Filter 链表 | 流程化逻辑拆分，多个处理单元按序执行 |
 | **Plugin** | 策略模式（Strategy） | Spring Plugin Framework | 多种算法/策略动态切换 |
+| **StateMachine** | 有限状态机（Finite State Machine） | Spring State Machine | 状态流转规则化，保证状态转换正确性 |
 
 ---
 
@@ -311,20 +312,39 @@ Plugin 支持两种 `PluginContext` 实现模式：直接实现 `PluginContext` 
 
 ---
 
-## 3. Pipeline vs Plugin 选择指南
+## 3. StateMachine（状态机）
 
-| 维度 | Pipeline | Plugin |
-|------|----------|--------|
-| 模式 | 责任链 | 策略 |
-| 核心操作 | 多个 filter **依次处理**同一请求 | 选择一个 plugin **执行替代**操作 |
-| 输出 | 链式处理，模型逐渐完善 | 策略返回结果 |
-| 匹配方式 | YAML 控制启用/禁用 | 运行时 `supports(context)` 动态匹配 |
-| 典型场景 | 订单下单流程、审批流 | 支付方式切换、通知渠道选择 |
-| 可组合 | ✅ 多个 filter 叠加 | ❌ 通常只选一个 |
+基于 Spring State Machine，定义状态转换规则，框架保证状态流转的正确性。
+
+| 角色 | 接口/类 | 职责 |
+|------|---------|------|
+| 状态/事件枚举 | 业务自定义 `enum` | 定义状态和触发事件 |
+| 状态机配置 | `StateMachineConfigurerAdapter` | 定义转换规则 + Guard/Action |
+| 状态机工厂 | `StateMachineFactory<S,E>` | 通过 `@EnableStateMachineFactory` 创建，每次返回新实例 |
+| 拦截器 | `StateMachineInterceptor` | 转换前/后的回调钩子 |
+
+核心要素：State（状态）、Event（事件）、Transition（转换规则）、Guard（条件守卫）、Action（转换动作）。
+
+> 📖 **详细使用指南**：`extension/state/README.md`，涵盖配置、注解/编程式监听、Interceptor 钩子、Guard/Action、扩展状态传参等完整用法。
+
+> ✅ **可运行测试**：`svc/server/admin/src/test/java/com/github/cadecode/xboot/admin/state/StateTests.java`
 
 ---
 
-## 4. API 速查
+## 4. Pipeline vs Plugin vs StateMachine
+
+| 维度 | Pipeline | Plugin | StateMachine |
+|------|----------|--------|-------------|
+| 模式 | 责任链 | 策略 | 有限状态机 |
+| 核心操作 | 多个 filter **依次处理** | 选择一个 plugin **执行替代** | 定义转换规则，**保证流程正确** |
+| 输出 | 链式处理，模型逐渐完善 | 策略返回结果 | 状态流转，Guard/Action |
+| 匹配方式 | YAML 控制启用/禁用 | `supports(context)` 动态匹配 | 事件驱动，非法自动拒绝 |
+| 典型场景 | 订单下单流程、审批流 | 支付方式切换、通知渠道 | 订单状态流转、审批工作流 |
+| 可组合 | ✅ 多个 filter 叠加 | ❌ 通常只选一个 | ✅ 状态+Guard+Action |
+
+---
+
+## 5. API 速查
 
 ### Pipeline
 
@@ -355,9 +375,19 @@ pluginExecutor.execute(PluginClass.class, context, plugin -> { ... });
 pluginExecutor.submit(PluginClass.class, context, PluginClass::method);
 ```
 
+### StateMachine
+
+```java
+// 状态机工厂创建实例
+StateMachine<OrderState, OrderEvent> sm = factory.getStateMachine();
+sm.start();
+sm.sendEvent(OrderEvent.PAY);  // 合法事件 → 状态转换
+sm.stop();
+```
+
 ---
 
-## 5. 项目结构
+## 6. 项目结构
 
 ```
 common/src/main/java/.../extension/
@@ -383,6 +413,8 @@ common/src/main/java/.../extension/
     ├── PluginSelectorExecutor.java       # 基于 Spring Plugin Registry 的执行器
     └── config/
         └── PluginAutoConfig.java         # 插件自动配置
+└── state/
+    └── README.md                          # Spring State Machine 使用指南
 
 server/admin/src/main/java/.../admin/
 ├── config/
@@ -392,4 +424,11 @@ server/admin/src/main/java/.../admin/
     ├── TestFilter1/2/3.java
     ├── TestContext.java
     └── TestType.java
+
+server/admin/src/test/java/.../admin/
+└── state/                                # StateMachine Demo
+    ├── StateTestState.java                     # 状态枚举
+    ├── StateTestEvent.java                     # 事件枚举
+    ├── StateTestStateMachineConfig.java        # @EnableStateMachineFactory 配置
+    └── StateTests.java                # 测试
 ```
