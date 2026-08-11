@@ -15,6 +15,7 @@
 
     <modules>
         <module>actuator</module>
+        <module>cache</module>
         <module>concurrent</module>
         <module>datasource</module>
         <module>web</module>
