@@ -1,10 +1,8 @@
 package com.github.cadecode.xboot.starter.cache.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -26,9 +24,8 @@ public class RedisKit implements InitializingBean {
     private RedisTemplate<String, Object> redisTemplate;
     private RedisLockKit redisLockKit;
 
-    @Autowired(required = false)
-    public void setRedisLockKit(RedisLockKit redisLockKit) {
-        this.redisLockKit = redisLockKit;
+    public static RedisTemplate<String, Object> getTemplate() {
+        return TEMPLATE;
     }
 
     public static RedisLockKit getLock() {
@@ -40,31 +37,15 @@ public class RedisKit implements InitializingBean {
         this.redisTemplate = redisTemplate;
     }
 
-    // ---- serialization ----
-
-    @SuppressWarnings("unchecked")
-    public static byte[] serialize(Object obj) {
-        return ((RedisSerializer<Object>) TEMPLATE.getValueSerializer()).serialize(obj);
-    }
-
-    public static Object deserialize(byte[] bytes) {
-        return TEMPLATE.getValueSerializer().deserialize(bytes);
+    @Autowired(required = false)
+    public void setRedisLockKit(RedisLockKit redisLockKit) {
+        this.redisLockKit = redisLockKit;
     }
 
     // ---- value operations ----
 
     public static Object get(String key) {
         return TEMPLATE.opsForValue().get(key);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T get(String key, Class<T> clazz) {
-        return (T) TEMPLATE.opsForValue().get(key);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T get(String key, TypeReference<T> typeReference) {
-        return (T) TEMPLATE.opsForValue().get(key);
     }
 
     public static void set(String key, Object o) {

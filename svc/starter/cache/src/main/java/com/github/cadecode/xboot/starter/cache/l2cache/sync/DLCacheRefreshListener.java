@@ -1,8 +1,8 @@
 package com.github.cadecode.xboot.starter.cache.l2cache.sync;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
-import cn.hutool.core.util.ObjUtil;
 import com.github.cadecode.xboot.starter.cache.l2cache.DLCacheProperties;
+import com.github.cadecode.xboot.starter.cache.l2cache.cache.DLCache;
 import com.github.cadecode.xboot.starter.cache.l2cache.cache.DLCacheManager;
 import com.github.cadecode.xboot.starter.cache.listener.RedisMessageListener;
 import com.github.cadecode.xboot.starter.cache.util.RedisKit;
@@ -14,6 +14,7 @@ import org.springframework.data.redis.listener.Topic;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 双级缓存刷新监听器
@@ -39,8 +40,8 @@ public class DLCacheRefreshListener extends RedisMessageListener {
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        DLCacheRefreshMsg refreshMsg = (DLCacheRefreshMsg) RedisKit.deserialize(message.getBody());
-        if (ObjUtil.isNull(refreshMsg)) {
+        DLCacheRefreshMsg refreshMsg = (DLCacheRefreshMsg) RedisKit.getTemplate().getValueSerializer().deserialize(message.getBody());
+        if (Objects.isNull(refreshMsg)) {
             return;
         }
         // 判断是不是自身节点发出
@@ -49,6 +50,9 @@ public class DLCacheRefreshListener extends RedisMessageListener {
             return;
         }
         log.debug("DLCache refresh local, cache name:{}, key:{}", refreshMsg.getCacheName(), refreshMsg.getKey());
-        dlCacheManager.getCache(refreshMsg.getCacheName()).clearLocal(refreshMsg.getKey());
+        DLCache cache = dlCacheManager.getCache(refreshMsg.getCacheName());
+        if (Objects.nonNull(cache)) {
+            cache.clearLocal(refreshMsg.getKey());
+        }
     }
 }
