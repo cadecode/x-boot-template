@@ -12,9 +12,8 @@ public final class CacheConst {
         throw new UnsupportedOperationException();
     }
 
-    public static final String CAFFEINE_5S = "caffeineCacheManager5s";
-    public static final String REDIS_5M = "redisCacheManager5m";
-    public static final String REDIS_30M = "redisCacheManager30m";
+    public static final String CAFFEINE = "caffeineCacheManager";
+    public static final String REDIS = "redisCacheManager";
     public static final String DL = "dlCacheManager";
 
 }
