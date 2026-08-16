@@ -1,5 +1,6 @@
-package com.github.cadecode.xboot.starter.cache.manager;
+package com.github.cadecode.xboot.starter.cache.cache.redis;
 
+import com.github.cadecode.xboot.starter.cache.cache.DynaTtlNameParser;
 import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;

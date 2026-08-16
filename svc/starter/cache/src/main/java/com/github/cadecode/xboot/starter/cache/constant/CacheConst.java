@@ -12,7 +12,7 @@ public final class CacheConst {
         throw new UnsupportedOperationException();
     }
 
-    public static final String REDIS = "redisCacheManager";
-    public static final String DL = "dlCacheManager";
+    public static final String MANAGER_REDIS = "redisCacheManager";
+    public static final String MANAGER_DL = "dlCacheManager";
 
 }

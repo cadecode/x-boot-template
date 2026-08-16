@@ -1,8 +1,9 @@
 package com.github.cadecode.xboot.starter.cache.config;
 
-import com.github.cadecode.xboot.starter.cache.l2cache.DLCacheProperties;
+import com.github.cadecode.xboot.starter.cache.cache.dl.DLCacheProperties;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * 缓存配置项
@@ -19,5 +20,6 @@ public class CacheProperties {
      */
     private String type;
 
+    @NestedConfigurationProperty
     private DLCacheProperties dlCache = new DLCacheProperties();
 }

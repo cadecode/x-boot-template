@@ -1,11 +1,8 @@
-package com.github.cadecode.xboot.starter.cache.l2cache.cache;
+package com.github.cadecode.xboot.starter.cache.cache.dl;
 
 import cn.hutool.core.util.ObjUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.cadecode.xboot.starter.cache.exception.DLCacheException;
-import com.github.cadecode.xboot.starter.cache.l2cache.DLCacheProperties;
-import com.github.cadecode.xboot.starter.cache.l2cache.sync.DLCacheRefreshListener;
-import com.github.cadecode.xboot.starter.cache.l2cache.sync.DLCacheRefreshMsg;
 import com.github.cadecode.xboot.starter.cache.util.KeyGeneUtil;
 import lombok.Data;
 import lombok.Getter;

@@ -1,9 +1,9 @@
 package com.github.cadecode.xboot.starter.cache.config;
 
+import com.github.cadecode.xboot.starter.cache.cache.dl.DLCacheManager;
+import com.github.cadecode.xboot.starter.cache.cache.dl.DLCacheRefreshListener;
+import com.github.cadecode.xboot.starter.cache.cache.redis.DynaTtlRedisCacheManager;
 import com.github.cadecode.xboot.starter.cache.constant.CacheConst;
-import com.github.cadecode.xboot.starter.cache.l2cache.cache.DLCacheManager;
-import com.github.cadecode.xboot.starter.cache.l2cache.sync.DLCacheRefreshListener;
-import com.github.cadecode.xboot.starter.cache.manager.DynaTtlRedisCacheManager;
 import com.github.cadecode.xboot.starter.cache.util.KeyGeneUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -33,8 +33,8 @@ import java.util.Objects;
 @EnableConfigurationProperties(CacheProperties.class)
 public class CacheManagerAutoConfig {
 
-    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.REDIS)
-    @Bean(name = CacheConst.REDIS)
+    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.MANAGER_REDIS)
+    @Bean(name = CacheConst.MANAGER_REDIS)
     public RedisCacheManager redisCacheManager(RedisTemplate<String, Object> redisTemplate) {
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .computePrefixWith(o -> o + KeyGeneUtil.SEPARATOR)
@@ -51,14 +51,14 @@ public class CacheManagerAutoConfig {
     /**
      * 双级缓存（Caffeine L1 + Redis L2）
      */
-    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.DL)
+    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.MANAGER_DL)
     @ConditionalOnMissingBean
-    @Bean(name = CacheConst.DL)
+    @Bean(name = CacheConst.MANAGER_DL)
     public DLCacheManager dlCacheManager(CacheProperties cacheProperties, RedisTemplate<String, Object> redisTemplate) {
         return new DLCacheManager(cacheProperties.getDlCache(), redisTemplate);
     }
 
-    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.DL)
+    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.MANAGER_DL)
     @Bean
     public DLCacheRefreshListener dlCacheRefreshListener(DLCacheManager dlCacheManager, CacheProperties cacheProperties) {
         return new DLCacheRefreshListener(dlCacheManager, cacheProperties.getDlCache());

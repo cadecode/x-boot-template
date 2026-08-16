@@ -1,9 +1,6 @@
-package com.github.cadecode.xboot.starter.cache.l2cache.sync;
+package com.github.cadecode.xboot.starter.cache.cache.dl;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
-import com.github.cadecode.xboot.starter.cache.l2cache.DLCacheProperties;
-import com.github.cadecode.xboot.starter.cache.l2cache.cache.DLCache;
-import com.github.cadecode.xboot.starter.cache.l2cache.cache.DLCacheManager;
 import com.github.cadecode.xboot.starter.cache.listener.RedisMessageListener;
 import com.github.cadecode.xboot.starter.cache.util.RedisKit;
 import lombok.RequiredArgsConstructor;
