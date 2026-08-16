@@ -67,6 +67,16 @@
             </dependency>
             <dependency>
                 <groupId>com.github.cadecode</groupId>
+                <artifactId>x-boot-starter-concurrent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.cadecode</groupId>
+                <artifactId>x-boot-starter-cache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.cadecode</groupId>
                 <artifactId>x-boot-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>
