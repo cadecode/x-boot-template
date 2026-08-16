@@ -1,6 +1,5 @@
 package com.github.cadecode.xboot.starter.cache.config;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.cadecode.xboot.starter.cache.constant.CacheConst;
 import com.github.cadecode.xboot.starter.cache.l2cache.cache.DLCacheManager;
 import com.github.cadecode.xboot.starter.cache.l2cache.sync.DLCacheRefreshListener;
@@ -11,7 +10,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -22,7 +20,6 @@ import org.springframework.data.redis.serializer.RedisSerializationContext.Seria
 
 import java.time.Duration;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * CacheManager 自动配置
@@ -35,16 +32,6 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 @EnableConfigurationProperties(CacheProperties.class)
 public class CacheManagerAutoConfig {
-
-    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.CAFFEINE)
-    @Bean(name = CacheConst.CAFFEINE)
-    public CaffeineCacheManager caffeineCacheManager() {
-        CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
-        caffeineCacheManager.setCaffeine(Caffeine.newBuilder()
-                .expireAfterWrite(5, TimeUnit.MINUTES));
-        caffeineCacheManager.setAllowNullValues(true);
-        return caffeineCacheManager;
-    }
 
     @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.REDIS)
     @Bean(name = CacheConst.REDIS)
