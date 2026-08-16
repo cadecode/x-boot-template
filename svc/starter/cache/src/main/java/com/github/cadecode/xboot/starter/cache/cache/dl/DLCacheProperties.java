@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.starter.cache.l2cache;
+package com.github.cadecode.xboot.starter.cache.cache.dl;
 
 import lombok.Data;
 

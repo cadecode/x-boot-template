@@ -1,8 +1,7 @@
-package com.github.cadecode.xboot.starter.cache.l2cache.cache;
+package com.github.cadecode.xboot.starter.cache.cache.dl;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.cadecode.xboot.starter.cache.l2cache.DLCacheProperties;
-import com.github.cadecode.xboot.starter.cache.l2cache.DLCacheProperties.LocalConfig;
+import com.github.cadecode.xboot.starter.cache.cache.dl.DLCacheProperties.LocalConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;

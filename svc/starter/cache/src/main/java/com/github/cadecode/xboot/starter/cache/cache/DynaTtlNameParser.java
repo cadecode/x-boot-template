@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.starter.cache.manager;
+package com.github.cadecode.xboot.starter.cache.cache;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
