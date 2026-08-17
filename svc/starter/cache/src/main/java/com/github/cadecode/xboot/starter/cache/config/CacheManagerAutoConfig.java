@@ -33,7 +33,7 @@ import java.util.Objects;
 @EnableConfigurationProperties(CacheProperties.class)
 public class CacheManagerAutoConfig {
 
-    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.MANAGER_REDIS)
+    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.TYPE_REDIS)
     @Bean(name = CacheConst.MANAGER_REDIS)
     public RedisCacheManager redisCacheManager(RedisTemplate<String, Object> redisTemplate) {
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
@@ -51,14 +51,14 @@ public class CacheManagerAutoConfig {
     /**
      * 双级缓存（Caffeine L1 + Redis L2）
      */
-    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.MANAGER_DL)
+    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.TYPE_DL)
     @ConditionalOnMissingBean
     @Bean(name = CacheConst.MANAGER_DL)
     public DLCacheManager dlCacheManager(CacheProperties cacheProperties, RedisTemplate<String, Object> redisTemplate) {
         return new DLCacheManager(cacheProperties.getDlCache(), redisTemplate);
     }
 
-    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.MANAGER_DL)
+    @ConditionalOnProperty(name = "x-boot.cache.type", havingValue = CacheConst.TYPE_DL)
     @Bean
     public DLCacheRefreshListener dlCacheRefreshListener(DLCacheManager dlCacheManager, CacheProperties cacheProperties) {
         return new DLCacheRefreshListener(dlCacheManager, cacheProperties.getDlCache());
