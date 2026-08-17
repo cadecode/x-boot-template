@@ -1,6 +1,7 @@
 package com.github.cadecode.xboot.starter.cache.config;
 
 import com.github.cadecode.xboot.starter.cache.cache.dl.DLCacheProperties;
+import com.github.cadecode.xboot.starter.cache.enums.CacheTypeEnum;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -16,9 +17,9 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 public class CacheProperties {
 
     /**
-     * cache manager 类型，对应 CacheConst 中的常量值
+     * cache manager 类型，可选值：REDIS（Redis 缓存）、DL（双级缓存），需按枚举名大写填写
      */
-    private String type;
+    private CacheTypeEnum type;
 
     @NestedConfigurationProperty
     private DLCacheProperties dlCache = new DLCacheProperties();
