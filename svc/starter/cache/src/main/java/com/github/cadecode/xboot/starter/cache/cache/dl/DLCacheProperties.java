@@ -2,6 +2,7 @@ package com.github.cadecode.xboot.starter.cache.cache.dl;
 
 import lombok.Data;
 
+import java.time.Duration;
 import java.util.Map;
 
 /**
@@ -39,9 +40,9 @@ public class DLCacheProperties {
     private long defaultExpiration = DEFAULT_EXPIRATION;
 
     /**
-     * 针对 cacheName 单独设置过期时间
+     * 针对 cacheName 单独设置过期时间，支持 Duration 单位后缀，如 5m/30s/2h/500ms，纯数字按毫秒
      */
-    private Map<String, Long> cacheExpirationMap;
+    private Map<String, Duration> cacheExpirationMap;
 
     private LocalConfig local = new LocalConfig();
     private RemoteConfig remote = new RemoteConfig();

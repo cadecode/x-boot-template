@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -51,9 +52,9 @@ public class DLCacheManager implements CacheManager {
 
         // TTL 优先级：配置 map（显式 0=不过期）> #ttl 后缀（0=不过期）> 默认过期（0=不过期）
         long expiration;
-        Map<String, Long> cacheExpirationMap = cacheProperties.getCacheExpirationMap();
+        Map<String, Duration> cacheExpirationMap = cacheProperties.getCacheExpirationMap();
         if (Objects.nonNull(cacheExpirationMap) && cacheExpirationMap.containsKey(configName)) {
-            expiration = cacheExpirationMap.get(configName);
+            expiration = cacheExpirationMap.get(configName).toMillis();
         } else if (Objects.nonNull(parsedName)) {
             expiration = parsedName.getTtl().toMillis();
         } else {
