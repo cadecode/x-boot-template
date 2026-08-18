@@ -1,6 +1,9 @@
 # Pi agent config (local)
 .pi/
 
+# Local issue tracker (matt-pocock skills)
+.scratch/
+
 ### IntelliJ IDEA ###
 .idea/
 *.iws
