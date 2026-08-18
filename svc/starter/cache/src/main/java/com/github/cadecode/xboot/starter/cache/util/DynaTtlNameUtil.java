@@ -1,9 +1,10 @@
-package com.github.cadecode.xboot.starter.cache.cache;
+package com.github.cadecode.xboot.starter.cache.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,11 +17,11 @@ import java.util.regex.Pattern;
  * @author Cade Li
  * @date 2024/7/24
  */
-public final class DynaTtlNameParser {
+public final class DynaTtlNameUtil {
 
     private static final Pattern TTL_SUFFIX = Pattern.compile("^(.+?)#(\\d+)([smh])?$");
 
-    private DynaTtlNameParser() {
+    private DynaTtlNameUtil() {
         throw new UnsupportedOperationException();
     }
 
@@ -34,11 +35,15 @@ public final class DynaTtlNameParser {
         }
         String realName = m.group(1);
         long value = Long.parseLong(m.group(2));
-        Duration ttl = switch (m.group(3)) {
-            case "m" -> Duration.ofMinutes(value);
-            case "h" -> Duration.ofHours(value);
-            default -> Duration.ofSeconds(value);
-        };
+        String unit = m.group(3);
+        // 无单位后缀时 group(3) 为 null，Java 17 switch 对 null 抛 NPE，需先行判断
+        Duration ttl = Objects.isNull(unit)
+                ? Duration.ofSeconds(value)
+                : switch (unit) {
+                    case "m" -> Duration.ofMinutes(value);
+                    case "h" -> Duration.ofHours(value);
+                    default -> Duration.ofSeconds(value);
+                };
         return new ParsedName(realName, ttl);
     }
 

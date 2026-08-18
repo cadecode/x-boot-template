@@ -20,6 +20,10 @@ import java.util.concurrent.TimeUnit;
  * 读：本地命中直接返回，未命中查 Redis 并回填本地
  * 写：先写 Redis 再通知集群刷新，最后写本地
  * 集群同步：写操作后通过 Redis pub/sub 通知其他节点清理本地缓存
+ * <p>
+ * 支持 cacheName 带 #ttl 后缀（如 user#6），与 Redis 后端协议一致。
+ * 注意：缓存名（含后缀）必须整体使用，@CacheEvict/@Cacheable 需写相同的缓存名，
+ * 否则会创建不同的缓存实例导致无法命中
  *
  * @author Cade Li
  * @date 2023/6/15

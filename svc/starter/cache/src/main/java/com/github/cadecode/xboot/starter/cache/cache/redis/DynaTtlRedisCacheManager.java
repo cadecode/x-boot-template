@@ -1,6 +1,6 @@
 package com.github.cadecode.xboot.starter.cache.cache.redis;
 
-import com.github.cadecode.xboot.starter.cache.cache.DynaTtlNameParser;
+import com.github.cadecode.xboot.starter.cache.util.DynaTtlNameUtil;
 import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
@@ -30,7 +30,7 @@ public class DynaTtlRedisCacheManager extends RedisCacheManager {
     @Override
     protected RedisCache createRedisCache(String name, @Nullable RedisCacheConfiguration cacheConfig) {
         RedisCacheConfiguration base = Objects.nonNull(cacheConfig) ? cacheConfig : defaultConfig;
-        DynaTtlNameParser.ParsedName parsed = DynaTtlNameParser.parse(name);
+        DynaTtlNameUtil.ParsedName parsed = DynaTtlNameUtil.parse(name);
         if (Objects.nonNull(parsed)) {
             base = base.entryTtl(parsed.getTtl());
         }
