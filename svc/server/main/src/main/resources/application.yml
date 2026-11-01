@@ -48,8 +48,9 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   group-configs:
-    - group: default
-      packages-to-scan: com.github.cadecode.xboot
+    - group: main
+      packages-to-scan:
+        - com.github.cadecode.xboot.main
 knife4j:
   enable: true
   setting:
