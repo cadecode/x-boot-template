@@ -17,11 +17,14 @@ import org.springframework.stereotype.Component;
  *
  * @author Cade Li
  * @date 2021/12/3
+ *
+ * @deprecated 由 baomidou dynamic-datasource 取代，保留仅为参考；请勿在业务中使用。
  */
 @Slf4j
 @Aspect
 @Component
 @Order(-1)
+@Deprecated
 public class DynamicDsAspect {
 
     @Pointcut("@within(com.github.cadecode.xboot.starter.datasource.annotation.UseDynamicDs) " +

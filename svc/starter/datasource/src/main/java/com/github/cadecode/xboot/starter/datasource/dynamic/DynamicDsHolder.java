@@ -9,7 +9,10 @@ import java.util.Stack;
  *
  * @author Cade Li
  * @date 2021/12/3
+ *
+ * @deprecated 由 baomidou dynamic-datasource 取代，保留仅为参考；请勿在业务中使用。
  */
+@Deprecated
 public class DynamicDsHolder {
 
     // 定义容器，存储当前线程的数据源 key，使用 stack 实现嵌套切换

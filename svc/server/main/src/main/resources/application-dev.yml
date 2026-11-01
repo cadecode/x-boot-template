@@ -1,0 +1,41 @@
+# dev 环境配置：数据库连接
+# 注意：引入 dynamic-datasource 后，spring.datasource.url/username/password 与
+# spring.datasource.druid.* 的池参数都不再生效，唯一入口是 spring.datasource.dynamic.*
+spring:
+  datasource:
+    dynamic:
+      # 主数据源
+      primary: master
+      # 注解 @DS 指定了不存在的数据源时直接报错，而不是静默回落主库
+      strict: true
+      # false：启动即初始化连接池，配置错误立即暴露
+      lazy: false
+      # 全局连接池参数（Druid），可被单个数据源覆盖
+      druid:
+        initialSize: 5
+        minIdle: 10
+        maxActive: 20
+        maxWait: 60000
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        maxEvictableIdleTimeMillis: 900000
+        validationQuery: SELECT 1
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        socketTimeout: 60000
+        filters: stat,wall
+        stat:
+          log-slow-sql: true
+          slow-sql-millis: 1000
+          merge-sql: false
+        wall:
+          multi-statement-allow: true
+      datasource:
+        master:
+          type: com.alibaba.druid.pool.DruidDataSource
+          # jdbc:p6spy: 前缀 + P6SpyDriver，SQL 日志见 starter/datasource/src/main/resources/spy.properties
+          url: jdbc:p6spy:mysql://127.0.0.1:3306/x_boot?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+          username: root
+          password: root
+          driver-class-name: com.p6spy.engine.spy.P6SpyDriver

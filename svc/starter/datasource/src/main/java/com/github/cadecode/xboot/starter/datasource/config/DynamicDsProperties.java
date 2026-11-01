@@ -11,9 +11,12 @@ import java.util.Map;
  *
  * @author Cade Li
  * @since 2023/6/8
+ *
+ * @deprecated 由 baomidou dynamic-datasource 取代，保留仅为参考；请勿在业务中使用。
  */
 @Data
 @ConfigurationProperties("x-boot.dynamic-ds")
+@Deprecated
 public class DynamicDsProperties {
 
     private boolean enable;

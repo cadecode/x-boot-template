@@ -21,18 +21,23 @@ import java.util.stream.Collectors;
  *
  * @author Cade Li
  * @date 2022/5/21
+ *
+ * @deprecated 由 baomidou dynamic-datasource 取代，保留仅为参考；请勿在业务中使用。
  */
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
 @EnableConfigurationProperties(DynamicDsProperties.class)
 @ConditionalOnProperty(name = "x-boot.dynamic-ds.enable", havingValue = "true")
+@Deprecated
 public class DynamicDsAutoConfig {
 
     private final DynamicDsProperties properties;
 
     @Bean
     public DynamicDs dynamicDs() {
+        log.warn("x-boot.dynamic-ds.enable=true，自研动态数据源已弃用，将与 dynamic-datasource 产生两个 DataSource bean；"
+                + "请改用 spring.datasource.dynamic.* + @DS，并关闭本开关");
         log.info("Checking dynamic datasource config");
         checkDynamicDsConfig();
         log.info("Starting to create dynamic datasource");

@@ -19,20 +19,8 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
   datasource:
-    # druid
+    # druid 监控页与 Web 统计（连接池参数见 application-dev.yml 的 dynamic.druid）
     druid:
-      socketTimeout: 60000
-      initialSize: 5
-      minIdle: 10
-      maxActive: 20
-      maxWait: 60000
-      timeBetweenEvictionRunsMillis: 60000
-      minEvictableIdleTimeMillis: 300000
-      maxEvictableIdleTimeMillis: 900000
-      validationQuery: SELECT 1 FROM DUAL
-      testWhileIdle: true
-      testOnBorrow: false
-      testOnReturn: false
       webStatFilter:
         enabled: true
       statViewServlet:
@@ -41,15 +29,15 @@ spring:
         url-pattern: /druid/*
         login-username: dev
         login-password: dev123
-      filter:
-        stat:
-          enabled: true
-          log-slow-sql: true
-          slow-sql-millis: 1000
-          merge-sql: false
-        wall:
-          config:
-            multi-statement-allow: true
+
+# mybatis-plus
+mybatis-plus:
+  # XML mapper 位置
+  mapper-locations: classpath*:mapper/mysql/**/*.xml
+  type-aliases-package: com.github.cadecode.xboot.**.bean
+  # mybatis 原生配置
+  configuration:
+    map-underscore-to-camel-case: true
 
 # swagger
 springdoc:
