@@ -81,8 +81,20 @@ _Avoid_: invalidate, sync event
 ### 数据源与并发
 
 **动态数据源**:
-基于 `AbstractRoutingDataSource` 的实现：`DynamicDs` 决定当前用哪个 key，`DynamicDsHolder` 存 key（ThreadLocal），`@UseDynamicDs("key")` 在类或方法上切换，配置前缀 `x-boot.dynamic-ds`，默认关闭（`enable=true` 才装配）。
+集成 baomidou `dynamic-datasource-spring-boot3-starter`：配置在 `spring.datasource.dynamic.*`（`primary` 指定主库，`strict` 决定写错 key 是报错还是回落主库），切换用 `@DS("key")`——同类自调用、事务已开之后都不生效。原自研实现（`DynamicDs` + `@UseDynamicDs` + 配置前缀 `x-boot.dynamic-ds`）已 `@Deprecated`，仅作参考：两者都往容器塞 `DataSource`，同时启用会让 MyBatis-Plus 的 `@ConditionalOnSingleCandidate` 失配、`SqlSessionFactory` 与事务管理器都不创建。
 _Avoid_: multi datasource, ds routing
+
+**BaseEntity**:
+`starter/mybatis` 的实体抽象基类，带 `create_time`/`create_user`/`update_time`/`update_user` 四个 `@TableField(fill = …)` 字段；继承它的实体，表必须有这四列。用抽象类而非接口，是因为 `@TableField` 只能标在字段上、且 MyBatis-Plus 收集字段时只沿类继承链走，不遍历接口。
+_Avoid_: base po, super entity
+
+**AuditUserProvider**:
+`currentUser()` 的 SPI。`create_user`/`update_user` 由 `BaseEntityFillHandler` 经它取值；模板里默认实现返回 `null`（即不填这两个字段），接入用户模块后提供 bean 覆盖即可。
+_Avoid_: user context, login user holder
+
+**分页执行者**:
+本项目分页统一由 PageHelper 完成（`PageHelper.startPage(...).doSelectPageInfo(...)`）。MyBatis-Plus 的分页插件与 PageHelper 都改写 SQL，同时注册会拼出 `LIMIT ? LIMIT ?`，所以 starter 不引 `mybatis-plus-jsqlparser`、`selectPage(IPage)` 不可用（不报错，但不分页、total 为 0）。
+_Avoid_: MP pagination, selectPage
 
 **限流注解**:
 `@RateLimit(limitPerSecond, waitTimeout)`，由 AOP 基于 Guava RateLimiter 实现，粒度是“每个被注解的方法”。
