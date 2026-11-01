@@ -28,7 +28,7 @@ MP 的 `MybatisConfiguration` 构造器把默认枚举 handler 换成 `Composite
 
 `dynamic-datasource` 只提供"一个 `DataSource` bean"，`MybatisPlusAutoConfiguration` 一行都不用改。但 `DataSource` 只能有一个：自研 `DynamicDs` 与它同时启用会让 `@ConditionalOnSingleCandidate(DataSource.class)` 失配，进而 `SqlSessionFactory`、`JdbcTemplate`、`DataSourceTransactionManager` 全部不创建。所以自研的 `DynamicDs`/`@UseDynamicDs`/`x-boot.dynamic-ds` 全部标 `@Deprecated`，默认关闭，仅在需要对比时启用。
 
-注意 `spring.datasource.url` 与 `spring.datasource.druid.*` 的**连接池参数**在引入 `dynamic-datasource` 后不再被读取，唯一入口是 `spring.datasource.dynamic.*`（池参数在 `dynamic.druid.*`，单库可覆盖）。Druid 监控页相关的 `spring.datasource.druid.statViewServlet.*` 仍由 druid 自己的 starter 读取，不受影响。
+注意 `spring.datasource.url` 与 `spring.datasource.druid.*` 的**连接池参数**在引入 `dynamic-datasource` 后不再被读取，唯一入口是 `spring.datasource.dynamic.*`（池参数在 `dynamic.druid.*`，单库可在 `dynamic.datasource.<key>.druid.*` 覆盖）。`spring.datasource.druid.*` 下只剩 Web 监控项有效：`dynamic-datasource` 的 `DruidDynamicDataSourceConfiguration` `@Import` 了 druid starter 的 `DruidStatViewServletConfiguration`、`DruidWebStatFilterConfiguration`，因此 `webStatFilter`、`statViewServlet` 仍写在那里。另：`dynamic.druid.filters` 必须列出 `stat`/`wall`，否则下面对应的 `stat.*`、`wall.*` 配置段不生效。
 
 ## Considered Options
 

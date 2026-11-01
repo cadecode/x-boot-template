@@ -1,17 +1,18 @@
 # dev 环境配置：数据库连接
-# 注意：引入 dynamic-datasource 后，spring.datasource.url/username/password 与
-# spring.datasource.druid.* 的池参数都不再生效，唯一入口是 spring.datasource.dynamic.*
+#
+# 引入 dynamic-datasource 后，druid 的配置分三处：
+#   1. spring.datasource.druid.*                     只有 webStatFilter、statViewServlet 等 Web 监控项仍读这里
+#                                                     （由 dynamic-datasource 的 DruidDynamicDataSourceConfiguration @Import）
+#   2. spring.datasource.dynamic.druid.*             全局连接池参数，可配置项见 DruidConfig
+#   3. spring.datasource.dynamic.datasource.<key>.druid.*   单个数据源覆盖全局
+# 注意：spring.datasource.url/username/password 与 spring.datasource.druid 下的池参数
+# （initialSize、maxActive 等）都不再生效，配了没反应。
 spring:
   datasource:
     dynamic:
-      # 主数据源
-      primary: master
-      # 注解 @DS 指定了不存在的数据源时直接报错，而不是静默回落主库
-      strict: true
-      # false：启动即初始化连接池，配置错误立即暴露
-      lazy: false
-      # 全局连接池参数（Druid），可被单个数据源覆盖
+      # 全局连接池参数（Druid）
       druid:
+        socketTimeout: 60000
         initialSize: 5
         minIdle: 10
         maxActive: 20
@@ -19,23 +20,34 @@ spring:
         timeBetweenEvictionRunsMillis: 60000
         minEvictableIdleTimeMillis: 300000
         maxEvictableIdleTimeMillis: 900000
-        validationQuery: SELECT 1
+        validationQuery: SELECT 1 FROM DUAL
         testWhileIdle: true
         testOnBorrow: false
         testOnReturn: false
-        socketTimeout: 60000
+        # stat、wall 两个 filter 必须先在这里启用，下面的 stat/wall 段才会生效
         filters: stat,wall
         stat:
           log-slow-sql: true
           slow-sql-millis: 1000
-          merge-sql: false
+          merge-sql: true
         wall:
           multi-statement-allow: true
+      # 主数据源
+      primary: master
+      # 注解 @DS 指定了不存在的数据源时直接报错，而不是静默回落主库
+      strict: true
+      # false：启动即初始化连接池，配置错误立即暴露
+      lazy: false
       datasource:
         master:
           type: com.alibaba.druid.pool.DruidDataSource
           # jdbc:p6spy: 前缀 + P6SpyDriver，SQL 日志见 starter/datasource/src/main/resources/spy.properties
-          url: jdbc:p6spy:mysql://127.0.0.1:3306/x_boot?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+          url: jdbc:p6spy:mysql://127.0.0.1:3306/x_boot?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
           username: root
           password: root
           driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+          # 需要和全局池参数不同时，在此覆盖
+          # druid:
+          #   initialSize: 6
+          #   minIdle: 100
+          #   maxActive: 200
