@@ -2,7 +2,7 @@ package com.github.cadecode.xboot.starter.mybatis.config;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.github.cadecode.xboot.starter.mybatis.handler.BaseEntityFillHandler;
-import com.github.cadecode.xboot.starter.mybatis.spi.AuditUserProvider;
+import com.github.cadecode.xboot.starter.mybatis.spi.EntityFillResolver;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -30,16 +30,16 @@ public class MybatisPlusConfig {
      */
     @ConditionalOnMissingBean(MetaObjectHandler.class)
     @Bean
-    public MetaObjectHandler baseEntityFillHandler(ObjectProvider<AuditUserProvider> auditUserProvider) {
-        return new BaseEntityFillHandler(auditUserProvider.getIfAvailable());
+    public MetaObjectHandler baseEntityFillHandler(ObjectProvider<EntityFillResolver> entityFillResolver) {
+        return new BaseEntityFillHandler(entityFillResolver.getIfAvailable());
     }
 
     /**
      * 未接入用户模块时的空实现，业务侧提供实现即可覆盖
      */
-    @ConditionalOnMissingBean(AuditUserProvider.class)
+    @ConditionalOnMissingBean(EntityFillResolver.class)
     @Bean
-    public AuditUserProvider auditUserProvider() {
+    public EntityFillResolver entityFillResolver() {
         return () -> null;
     }
 }

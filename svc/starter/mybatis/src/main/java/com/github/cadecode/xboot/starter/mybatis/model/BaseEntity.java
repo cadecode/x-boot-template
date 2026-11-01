@@ -35,7 +35,7 @@ public abstract class BaseEntity implements Serializable {
     private LocalDateTime createTime;
 
     /**
-     * 创建人，插入时填充，取值见 {@code AuditUserProvider}
+     * 创建人，插入时填充，取值见 {@code EntityFillResolver}
      */
     @TableField(fill = FieldFill.INSERT)
     private String createUser;
@@ -47,7 +47,7 @@ public abstract class BaseEntity implements Serializable {
     private LocalDateTime updateTime;
 
     /**
-     * 更新人，插入、更新时填充，取值见 {@code AuditUserProvider}
+     * 更新人，插入、更新时填充，取值见 {@code EntityFillResolver}
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private String updateUser;

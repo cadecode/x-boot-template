@@ -88,7 +88,7 @@ _Avoid_: multi datasource, ds routing
 `starter/mybatis` 的实体抽象基类，带 `create_time`/`create_user`/`update_time`/`update_user` 四个 `@TableField(fill = …)` 字段；继承它的实体，表必须有这四列。用抽象类而非接口，是因为 `@TableField` 只能标在字段上、且 MyBatis-Plus 收集字段时只沿类继承链走，不遍历接口。
 _Avoid_: base po, super entity
 
-**AuditUserProvider**:
+**EntityFillResolver**:
 `currentUser()` 的 SPI。`create_user`/`update_user` 由 `BaseEntityFillHandler` 经它取值；模板里默认实现返回 `null`（即不填这两个字段），接入用户模块后提供 bean 覆盖即可。
 _Avoid_: user context, login user holder
 

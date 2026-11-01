@@ -1,6 +1,6 @@
 # MyBatis 集成用 MyBatis-Plus，分页交给 PageHelper
 
-新增 `starter/mybatis`，替代 `old-dev` 分支里的 mybatis-flex 方案。依赖 `mybatis-plus-spring-boot3-starter`（Boot 3 专用产物），分页用 `pagehelper` 原生包 + 手写 `PageInterceptor` bean（参数写死，同 `old-dev`，不走 yml），不引 `mybatis-plus-jsqlparser`。公共审计字段由抽象类 `BaseEntity` + `MetaObjectHandler` 填充，审计人取值留给 `AuditUserProvider` SPI（当前无认证体系，默认返回 `null` 即不填）。数据源改用 baomidou `dynamic-datasource`，原自研 `DynamicDs` 标 `@Deprecated` 保留。SQL 日志与慢 SQL 用 p6spy。
+新增 `starter/mybatis`，替代 `old-dev` 分支里的 mybatis-flex 方案。依赖 `mybatis-plus-spring-boot3-starter`（Boot 3 专用产物），分页用 `pagehelper` 原生包 + 手写 `PageInterceptor` bean（参数写死，同 `old-dev`，不走 yml），不引 `mybatis-plus-jsqlparser`。公共审计字段由抽象类 `BaseEntity` + `MetaObjectHandler` 填充，审计人取值留给 `EntityFillResolver` SPI（当前无认证体系，默认返回 `null` 即不填）。数据源改用 baomidou `dynamic-datasource`，原自研 `DynamicDs` 标 `@Deprecated` 保留。SQL 日志与慢 SQL 用 p6spy。
 
 ## 为什么换掉 flex
 

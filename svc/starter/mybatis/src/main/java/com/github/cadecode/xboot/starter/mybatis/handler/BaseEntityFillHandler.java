@@ -1,7 +1,7 @@
 package com.github.cadecode.xboot.starter.mybatis.handler;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import com.github.cadecode.xboot.starter.mybatis.spi.AuditUserProvider;
+import com.github.cadecode.xboot.starter.mybatis.spi.EntityFillResolver;
 import org.apache.ibatis.reflection.MetaObject;
 
 import java.time.LocalDateTime;
@@ -21,10 +21,10 @@ import java.util.Objects;
  */
 public class BaseEntityFillHandler implements MetaObjectHandler {
 
-    private final AuditUserProvider auditUserProvider;
+    private final EntityFillResolver entityFillResolver;
 
-    public BaseEntityFillHandler(AuditUserProvider auditUserProvider) {
-        this.auditUserProvider = auditUserProvider;
+    public BaseEntityFillHandler(EntityFillResolver entityFillResolver) {
+        this.entityFillResolver = entityFillResolver;
     }
 
     @Override
@@ -49,6 +49,6 @@ public class BaseEntityFillHandler implements MetaObjectHandler {
     }
 
     private String currentUser() {
-        return Objects.isNull(auditUserProvider) ? null : auditUserProvider.currentUser();
+        return Objects.isNull(entityFillResolver) ? null : entityFillResolver.currentUser();
     }
 }
