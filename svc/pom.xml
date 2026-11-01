@@ -61,6 +61,11 @@
             </dependency>
             <dependency>
                 <groupId>com.github.cadecode</groupId>
+                <artifactId>x-boot-starter-mybatis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.cadecode</groupId>
                 <artifactId>x-boot-starter-concurrent</artifactId>
                 <version>${project.version}</version>
             </dependency>

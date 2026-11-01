@@ -29,6 +29,10 @@
             <groupId>com.github.cadecode</groupId>
             <artifactId>x-boot-starter-datasource</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.cadecode</groupId>
+            <artifactId>x-boot-starter-mybatis</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>net.dreamlu</groupId>
