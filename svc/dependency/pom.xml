@@ -23,6 +23,9 @@
         <p6spy.version>3.9.1</p6spy.version>
         <dynamic-datasource.version>4.5.0</dynamic-datasource.version>
         <mybatis-plus.version>3.5.15</mybatis-plus.version>
+        <!-- 用 jsqlparser-4.9 版模块：pagehelper 6.1.0 编译于 4.7，5.x 把 WithItem.getSelect()
+             的返回类型改成了 ParenthesedSelect，CTE 的 count 改写会 NoSuchMethodError -->
+        <jsqlparser.version>4.9</jsqlparser.version>
         <pagehelper.version>6.1.0</pagehelper.version>
         <swagger.version>2.2.19</swagger.version>
         <knife4j.version>4.4.0</knife4j.version>
@@ -128,6 +131,18 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
+            </dependency>
+            <!--MP 分页/数据权限拦截器所在模块（DataPermissionInterceptor、PaginationInnerInterceptor）-->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-jsqlparser-4.9</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <!--jsqlparser 只能留一个版本，锁到 pagehelper 与 MP 都能跑的那版-->
+            <dependency>
+                <groupId>com.github.jsqlparser</groupId>
+                <artifactId>jsqlparser</artifactId>
+                <version>${jsqlparser.version}</version>
             </dependency>
             <!--pagehelper 分页-->
             <dependency>

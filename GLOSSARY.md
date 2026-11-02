@@ -92,8 +92,12 @@ _Avoid_: base po, super entity
 `currentUser()` 的 SPI。`create_user`/`update_user` 由 `BaseEntityFillHandler` 经它取值；模板里默认实现返回 `null`（即不填这两个字段），接入用户模块后提供 bean 覆盖即可。
 _Avoid_: user context, login user holder
 
+**数据权限（DataScope）**:
+`@DataScope` + `DataScopeResolver` 的组合：注解声明"过滤哪个字段、对哪些表生效"，SPI 提供"当前用户能看到哪些范围值"，`DataScopePermissionHandler` 实现 MP 的 `MultiDataPermissionHandler`，按表回调拼 `field IN (...)`。未标注解的请求不追加任何条件。
+_Avoid_: row filter, permission interceptor
+
 **分页执行者**:
-本项目分页统一由 PageHelper 完成（`PageHelper.startPage(...).doSelectPageInfo(...)`）。MyBatis-Plus 的分页插件与 PageHelper 都改写 SQL，同时注册会拼出 `LIMIT ? LIMIT ?`，所以 starter 不引 `mybatis-plus-jsqlparser`、`selectPage(IPage)` 不可用（不报错，但不分页、total 为 0）。
+本项目分页仍由 PageHelper 完成（`PageHelper.startPage(...).doSelectPageInfo(...)`）。starter 为数据权限引入了 `mybatis-plus-jsqlparser-4.9`（jsqlparser 4.9，pagehelper 6.1.0 在 4.9 上实测可用；5.2 会让 CTE 的 count 改写 `NoSuchMethodError`），但 MP 的分页插件没有注册，`selectPage(IPage)` 是不分页的（不报错，total 为 0）。两者都改写 SQL，不能同时注册，否则拼出 `LIMIT ? LIMIT ?`。
 _Avoid_: MP pagination, selectPage
 
 **限流注解**:

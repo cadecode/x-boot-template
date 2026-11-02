@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>x-boot-starter-mybatis</artifactId>
-    <description>MyBatis-Plus、PageHelper 集成</description>
+    <description>MyBatis-Plus 集成（分页、数据权限、公共字段填充、类型处理器）</description>
 
     <dependencies>
         <dependency>
@@ -18,10 +18,24 @@
             <artifactId>x-boot-common</artifactId>
         </dependency>
 
-        <!--mybatis-plus，分页交给 PageHelper，故不引 mybatis-plus-jsqlparser-->
+        <!--mybatis-plus，Boot 3 专用 starter-->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+        <!--数据权限/分页拦截器所在模块，选 4.9 版以兼容 pagehelper-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser-4.9</artifactId>
+        </dependency>
+        <!--aop，数据权限注解切面-->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
         </dependency>
         <!--pagehelper 分页，用原生包以避开 pagehelper-spring-boot-starter 的 Boot 2 依赖-->
         <dependency>

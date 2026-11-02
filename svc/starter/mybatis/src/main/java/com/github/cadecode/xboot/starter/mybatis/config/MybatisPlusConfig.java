@@ -1,20 +1,29 @@
 package com.github.cadecode.xboot.starter.mybatis.config;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionInterceptor;
 import com.github.cadecode.xboot.starter.mybatis.handler.BaseEntityFillHandler;
+import com.github.cadecode.xboot.starter.mybatis.handler.DataScopePermissionHandler;
+import com.github.cadecode.xboot.starter.mybatis.spi.DataScopeResolver;
 import com.github.cadecode.xboot.starter.mybatis.spi.EntityFillResolver;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 /**
  * MyBatis-Plus 配置
  * <p>
- * 分页统一交给 PageHelper（见 {@link PageHelperConfig}）：不引 mybatis-plus-jsqlparser、
- * 不注册 PaginationInnerInterceptor，因此 Mapper 的 selectPage(IPage) 不会被分页
- * （返回全表、total 为 0），业务请用 PageHelper。
+ * 数据权限用 MP 的 {@link DataPermissionInterceptor}：SQL 里的每张表都会回调
+ * {@link DataScopePermissionHandler}，只有标注了 {@code @DataScope} 且命中表名时才追加条件。
+ * <p>
+ * 拦截器顺序：MyBatis {@code InterceptorChain.pluginAll} 从前往后逐个包装，<b>列表靠后者在最外层、先执行</b>；
+ * Spring 注入 {@code Interceptor[]} 时按 {@code @Order} 升序排列，所以数值大的在外层。
+ * 这里给 MP 的 {@code MybatisPlusInterceptor} 标 {@code @Order(100)}、分页的 {@code PageInterceptor} 标
+ * {@code @Order(0)}，保证数据权限先改写 SQL，分页据此生成的 count 也带权限条件。
  *
  * @author Cade Li
  * @since 2024/5/20
@@ -22,6 +31,21 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 public class MybatisPlusConfig {
+
+    /**
+     * MP 插件链（当前只有数据权限）
+     * <p>
+     * 后续接入 MP 分页时，在这里 addInnerInterceptor 把 {@code PaginationInnerInterceptor} 加上即可。
+     */
+    @Order(100)
+    @ConditionalOnMissingBean
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new DataPermissionInterceptor(new DataScopePermissionHandler()));
+        log.info("Create MybatisPlusInterceptor with DataPermissionInterceptor");
+        return interceptor;
+    }
 
     /**
      * 公共字段填充器
@@ -40,6 +64,15 @@ public class MybatisPlusConfig {
     @ConditionalOnMissingBean(EntityFillResolver.class)
     @Bean
     public EntityFillResolver entityFillResolver() {
+        return () -> null;
+    }
+
+    /**
+     * 未接入用户模块时的空实现：不限制数据范围
+     */
+    @ConditionalOnMissingBean(DataScopeResolver.class)
+    @Bean
+    public DataScopeResolver dataScopeResolver() {
         return () -> null;
     }
 }
