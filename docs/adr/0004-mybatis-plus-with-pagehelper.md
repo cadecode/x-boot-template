@@ -1,6 +1,6 @@
 # MyBatis 集成用 MyBatis-Plus，分页交给 PageHelper
 
-新增 `starter/mybatis`，替代 `old-dev` 分支里的 mybatis-flex 方案。依赖 `mybatis-plus-spring-boot3-starter`（Boot 3 专用产物），分页用 `pagehelper` 原生包 + 手写 `PageInterceptor` bean（参数写死，同 `old-dev`，不走 yml），不引 `mybatis-plus-jsqlparser`。公共审计字段由抽象类 `BaseEntity` + `MetaObjectHandler` 填充，审计人取值留给 `EntityFillResolver` SPI（当前无认证体系，默认返回 `null` 即不填）。数据源改用 baomidou `dynamic-datasource`，原自研 `DynamicDs` 标 `@Deprecated` 保留。SQL 日志与慢 SQL 用 p6spy。
+新增 `starter/mybatis`，替代 `old-dev` 分支里的 mybatis-flex 方案。依赖 `mybatis-plus-spring-boot3-starter`（Boot 3 专用产物），分页用 `pagehelper` 原生包 + 手写 `PageInterceptor` bean（参数写死，同 `old-dev`，不走 yml），不引 `mybatis-plus-jsqlparser`。公共审计字段由抽象类 `BaseEntity` + `MetaObjectHandler` 填充，审计人取值留给 `EntityFillResolver` SPI（当前无认证体系，默认返回 `null` 即不填）。数据源默认用 baomidou `dynamic-datasource`，原自研 `DynamicDs` 保留为可选实现（默认关闭）。SQL 日志与慢 SQL 用 p6spy。
 
 ## 为什么换掉 flex
 
@@ -24,9 +24,9 @@ MP 的 `MybatisConfiguration` 构造器把默认枚举 handler 换成 `Composite
 
 `old-dev` 的 `DbEnumConvertible` + `DefaultEnumTypeHandler` 搬过来了但**不注册**，纯备用：需要把枚举按数值落库时，在实体字段上写 `@TableField(typeHandler = DefaultEnumTypeHandler.class)`，或自行配置 `mybatis-plus.configuration.default-enum-type-handler`。它和 `old-dev` 一样用 `ordinal()` 兜底（实现 `DbEnumConvertible` 的取 `dbValue()`）——因为枚举名写进 tinyint/int 列会报 `Incorrect integer value`。**代价必须知道**：`ordinal()` 把"声明顺序"当成数据语义，往枚举中间插值或调序会让历史数据整体错位且不报错，所以业务枚举能用 `@EnumValue` / `DbEnumConvertible` 显式声明数值就别靠 `ordinal()`。
 
-## 数据源：dynamic-datasource，自研方案弃用
+## 数据源：默认 dynamic-datasource，自研方案可选
 
-`dynamic-datasource` 只提供"一个 `DataSource` bean"，`MybatisPlusAutoConfiguration` 一行都不用改。但 `DataSource` 只能有一个：自研 `DynamicDs` 与它同时启用会让 `@ConditionalOnSingleCandidate(DataSource.class)` 失配，进而 `SqlSessionFactory`、`JdbcTemplate`、`DataSourceTransactionManager` 全部不创建。所以自研的 `DynamicDs`/`@UseDynamicDs`/`x-boot.dynamic-ds` 全部标 `@Deprecated`，默认关闭，仅在需要对比时启用。
+`dynamic-datasource` 只提供"一个 `DataSource` bean"，`MybatisPlusAutoConfiguration` 一行都不用改。但 `DataSource` 只能有一个：自研 `DynamicDs` 与它同时启用会让 `@ConditionalOnSingleCandidate(DataSource.class)` 失配，进而 `SqlSessionFactory`、`JdbcTemplate`、`DataSourceTransactionManager` 全部不创建。所以自研的 `DynamicDs`/`@DynamicDs`/`x-boot.dynamic-ds` 保留为**可选实现**，由 `x-boot.dynamic-ds.enable` 控制，默认关闭；启用时必须同时关掉 dynamic-datasource，两者只能选一个。
 
 注意 `spring.datasource.url` 与 `spring.datasource.druid.*` 的**连接池参数**在引入 `dynamic-datasource` 后不再被读取，唯一入口是 `spring.datasource.dynamic.*`（池参数在 `dynamic.druid.*`，单库可在 `dynamic.datasource.<key>.druid.*` 覆盖）。`spring.datasource.druid.*` 下只剩 Web 监控项有效：`dynamic-datasource` 的 `DruidDynamicDataSourceConfiguration` `@Import` 了 druid starter 的 `DruidStatViewServletConfiguration`、`DruidWebStatFilterConfiguration`，因此 `webStatFilter`、`statViewServlet` 仍写在那里。另：`dynamic.druid.filters` 必须列出 `stat`/`wall`，否则下面对应的 `stat.*`、`wall.*` 配置段不生效。
 

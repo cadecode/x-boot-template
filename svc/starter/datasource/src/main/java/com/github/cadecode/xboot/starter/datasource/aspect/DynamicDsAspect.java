@@ -1,6 +1,6 @@
 package com.github.cadecode.xboot.starter.datasource.aspect;
 
-import com.github.cadecode.xboot.starter.datasource.annotation.UseDynamicDs;
+import com.github.cadecode.xboot.starter.datasource.annotation.DynamicDs;
 import com.github.cadecode.xboot.starter.datasource.dynamic.DynamicDsHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -17,18 +17,15 @@ import org.springframework.stereotype.Component;
  *
  * @author Cade Li
  * @date 2021/12/3
- *
- * @deprecated 由 baomidou dynamic-datasource 取代，保留仅为参考；请勿在业务中使用。
  */
 @Slf4j
 @Aspect
 @Component
 @Order(-1)
-@Deprecated
 public class DynamicDsAspect {
 
-    @Pointcut("@within(com.github.cadecode.xboot.starter.datasource.annotation.UseDynamicDs) " +
-            "|| @annotation(com.github.cadecode.xboot.starter.datasource.annotation.UseDynamicDs)")
+    @Pointcut("@within(com.github.cadecode.xboot.starter.datasource.annotation.DynamicDs) " +
+            "|| @annotation(com.github.cadecode.xboot.starter.datasource.annotation.DynamicDs)")
     public void pointCut() {
 
     }
@@ -61,11 +58,11 @@ public class DynamicDsAspect {
     }
 
     /**
-     * 获取 UseDynamicDs 注解内容，以方法为主
+     * 获取 DynamicDs 注解内容，以方法为主
      */
     private String getDataSourceKey(JoinPoint point) {
         MethodSignature methodSignature = (MethodSignature) point.getSignature();
-        UseDynamicDs dsM = methodSignature.getMethod().getAnnotation(UseDynamicDs.class);
+        DynamicDs dsM = methodSignature.getMethod().getAnnotation(DynamicDs.class);
         // 获取数据源 key
         String dataSourceKey;
         if (dsM != null) {
@@ -74,7 +71,7 @@ public class DynamicDsAspect {
         // 获取取类上的注解内容
         dataSourceKey = methodSignature.getMethod()
                 .getDeclaringClass()
-                .getAnnotation(UseDynamicDs.class)
+                .getAnnotation(DynamicDs.class)
                 .value();
         return dataSourceKey;
     }

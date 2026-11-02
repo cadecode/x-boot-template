@@ -7,10 +7,7 @@ import com.github.cadecode.xboot.common.exception.BaseException;
  *
  * @author Cade Li
  * @date 2023/6/9
- *
- * @deprecated 由 baomidou dynamic-datasource 取代，保留仅为参考；请勿在业务中使用。
  */
-@Deprecated
 public class DynamicDsException extends BaseException {
     public DynamicDsException() {
     }

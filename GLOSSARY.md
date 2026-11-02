@@ -81,7 +81,7 @@ _Avoid_: invalidate, sync event
 ### 数据源与并发
 
 **动态数据源**:
-集成 baomidou `dynamic-datasource-spring-boot3-starter`：配置在 `spring.datasource.dynamic.*`（`primary` 指定主库，`strict` 决定写错 key 是报错还是回落主库），切换用 `@DS("key")`——同类自调用、事务已开之后都不生效。原自研实现（`DynamicDs` + `@UseDynamicDs` + 配置前缀 `x-boot.dynamic-ds`）已 `@Deprecated`，仅作参考：两者都往容器塞 `DataSource`，同时启用会让 MyBatis-Plus 的 `@ConditionalOnSingleCandidate` 失配、`SqlSessionFactory` 与事务管理器都不创建。
+集成 baomidou `dynamic-datasource-spring-boot3-starter`：配置在 `spring.datasource.dynamic.*`（`primary` 指定主库，`strict` 决定写错 key 是报错还是回落主库），切换用 `@DS("key")`——同类自调用、事务已开之后都不生效。原自研实现（`DynamicDs` + `@DynamicDs` + 配置前缀 `x-boot.dynamic-ds`）保留为可选方案（`x-boot.dynamic-ds.enable` 开启，默认关闭）。两者都往容器塞 `DataSource`，同时启用会让 MyBatis-Plus 的 `@ConditionalOnSingleCandidate` 失配、`SqlSessionFactory` 与事务管理器都不创建，所以只能二选一。
 _Avoid_: multi datasource, ds routing
 
 **BaseEntity**:

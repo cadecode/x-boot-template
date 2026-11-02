@@ -10,10 +10,7 @@ import java.util.Map;
  *
  * @author Cade Li
  * @date 2021/12/3
- *
- * @deprecated 由 baomidou dynamic-datasource 取代，保留仅为参考；请勿在业务中使用。
  */
-@Deprecated
 public class DynamicDs extends AbstractRoutingDataSource {
 
     /**
