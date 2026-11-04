@@ -42,6 +42,19 @@
    注解不写 `resolverName` 时取容器里唯一的实现，有多个实现则直接抛异常提示补 `resolverName`；
    uni-boot 要求业务提供名为 `defaultDataScopeResolver` 的 bean，取不到直接抛。
 
+## 注解读取口径
+
+四个取注解的地方（本切面、`DynamicDsAspect`、`RateLimitAspect`、`ApiResultAdvisor`）统一走
+`common/util/AspectUtil`：先用 `AopUtils.getTargetClass` + `AopUtils.getMostSpecificMethod` 把
+「签名方法 + 目标对象」还原成「目标类 + 实现方法」，再用 JDK 原生 `getAnnotation` 读取。
+方法上的注解优先、类上的兜底，**回退粒度统一为整条注解**：方法上只要标了注解，就完全使用它的属性，
+不与类上的注解做属性合并（与 Spring 的 `@Transactional` 一致）。四个注解（`@DataScope`、`@DynamicDs`、
+`@RateLimit`、`@ApiFormat`）口径一致。
+
+代价（明确接受）：不使用 `AnnotatedElementUtils.findMergedAnnotation`，所以**元注解与 `@AliasFor`
+属性合成不生效**。原因：切点是 `@within || @annotation`，只按直接标注匹配，元注解场景根本进不来，
+合并能力用不上；而 `getMostSpecificMethod` 已经覆盖了泛型桥接方法这一实际收益。
+
 ## 用法
 
 ```java

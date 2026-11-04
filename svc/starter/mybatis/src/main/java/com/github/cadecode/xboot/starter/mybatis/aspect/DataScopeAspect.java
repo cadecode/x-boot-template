@@ -3,6 +3,7 @@ package com.github.cadecode.xboot.starter.mybatis.aspect;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.github.cadecode.xboot.common.exception.HelperException;
+import com.github.cadecode.xboot.common.util.AspectUtil;
 import com.github.cadecode.xboot.common.util.SpringUtil;
 import com.github.cadecode.xboot.starter.mybatis.annotation.DataScope;
 import com.github.cadecode.xboot.starter.mybatis.spi.DataScopeResolver;
@@ -16,12 +17,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -77,27 +75,13 @@ public class DataScopeAspect {
 
     private DataScopeParam buildParam(JoinPoint point) {
         MethodSignature signature = (MethodSignature) point.getSignature();
-        Class<?> targetClass = Objects.isNull(point.getTarget())
-                ? signature.getMethod().getDeclaringClass()
-                : AopUtils.getTargetClass(point.getTarget());
-        Method method = AopUtils.getMostSpecificMethod(signature.getMethod(), targetClass);
-        DataScope methodAnn = AnnotatedElementUtils.findMergedAnnotation(method, DataScope.class);
-        DataScope classAnn = AnnotatedElementUtils.findMergedAnnotation(targetClass, DataScope.class);
-        if (Objects.isNull(methodAnn) && Objects.isNull(classAnn)) {
-            return null;
-        }
-        boolean enableFilter = Objects.nonNull(methodAnn) ? methodAnn.enableFilter() : classAnn.enableFilter();
-        // 方法上的配置优先，类上的兜底
-        String field = ObjUtil.defaultIfEmpty(fieldOf(methodAnn),
-                ObjUtil.defaultIfEmpty(fieldOf(classAnn), DataScope.DEFAULT_FIELD));
-        String[] tables = Objects.nonNull(methodAnn) && methodAnn.tables().length > 0
-                ? methodAnn.tables()
-                : (Objects.isNull(classAnn) ? new String[0] : classAnn.tables());
-        String resolverName = ObjUtil.defaultIfEmpty(resolverNameOf(methodAnn), resolverNameOf(classAnn));
-        DataScopeResolver resolver = resolveResolver(resolverName);
+        // 方法上的注解优先，类上的兜底；回退粒度是整条注解，不做属性合并
+        DataScope dataScope = AspectUtil.requireAnnotation(point.getTarget(), signature.getMethod(), DataScope.class);
+        String field = ObjUtil.defaultIfEmpty(dataScope.field(), DataScope.DEFAULT_FIELD);
+        DataScopeResolver resolver = resolveResolver(dataScope.resolverName());
         log.debug("DataScope: enableFilter={}, field={}, tables={}, resolver={}",
-                enableFilter, field, Arrays.toString(tables), resolver);
-        return new DataScopeParam(enableFilter, field, tables, resolver);
+                dataScope.enableFilter(), field, Arrays.toString(dataScope.tables()), resolver);
+        return new DataScopeParam(dataScope.enableFilter(), field, dataScope.tables(), resolver);
     }
 
     /**
@@ -120,14 +104,6 @@ public class DataScopeAspect {
         throw new HelperException("Multiple DataScopeResolver beans found, mark one with @Primary "
                 + "or set resolverName on @DataScope: {}",
                 Arrays.toString(SpringUtil.getBeanNamesForType(DataScopeResolver.class)));
-    }
-
-    private static String fieldOf(DataScope ann) {
-        return Objects.isNull(ann) ? null : ann.field();
-    }
-
-    private static String resolverNameOf(DataScope ann) {
-        return Objects.isNull(ann) ? null : ann.resolverName();
     }
 
     /**

@@ -10,7 +10,8 @@ import java.lang.annotation.Target;
  * 数据权限注解
  * <p>
  * 标在类或方法上，本次请求内的 SQL 会按 {@link com.github.cadecode.xboot.starter.mybatis.spi.DataScopeResolver}
- * 返回的范围追加 {@code field IN (...)} 条件。方法上的注解优先，字段级配置回退到类上的注解。
+ * 返回的范围追加 {@code field IN (...)} 条件。方法上的注解优先、类上的兜底，回退粒度是「整条注解」：
+ * 方法上只要标了 {@code @DataScope}，就完全使用它的属性，不与类上的注解做属性合并。
  * <p>
  * 注意：切点是 {@code @within || @annotation}，按<b>目标类</b>匹配，所以注解要标在实现类（或实现类的方法）上；
  * 只标在接口上不会命中切面。被 JDK 代理时方法签名拿到的是接口方法，切面内部会还原到实现类方法再读注解。

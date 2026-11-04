@@ -1,5 +1,6 @@
 package com.github.cadecode.xboot.starter.datasource.aspect;
 
+import com.github.cadecode.xboot.common.util.AspectUtil;
 import com.github.cadecode.xboot.starter.datasource.annotation.DynamicDs;
 import com.github.cadecode.xboot.starter.datasource.dynamic.DynamicDsHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -61,18 +62,9 @@ public class DynamicDsAspect {
      * 获取 DynamicDs 注解内容，以方法为主
      */
     private String getDataSourceKey(JoinPoint point) {
-        MethodSignature methodSignature = (MethodSignature) point.getSignature();
-        DynamicDs dsM = methodSignature.getMethod().getAnnotation(DynamicDs.class);
-        // 获取数据源 key
-        String dataSourceKey;
-        if (dsM != null) {
-            return dsM.value();
-        }
-        // 获取取类上的注解内容
-        dataSourceKey = methodSignature.getMethod()
-                .getDeclaringClass()
-                .getAnnotation(DynamicDs.class)
-                .value();
-        return dataSourceKey;
+        MethodSignature signature = (MethodSignature) point.getSignature();
+        // 方法上的注解优先，类上的兜底
+        DynamicDs dynamicDs = AspectUtil.requireAnnotation(point.getTarget(), signature.getMethod(), DynamicDs.class);
+        return dynamicDs.value();
     }
 }

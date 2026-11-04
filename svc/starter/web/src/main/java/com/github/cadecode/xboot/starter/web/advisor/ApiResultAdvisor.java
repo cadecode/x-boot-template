@@ -2,6 +2,7 @@ package com.github.cadecode.xboot.starter.web.advisor;
 
 import cn.hutool.core.util.ObjUtil;
 import com.github.cadecode.xboot.common.exception.GeneralException;
+import com.github.cadecode.xboot.common.util.AspectUtil;
 import com.github.cadecode.xboot.common.util.JacksonUtil;
 import com.github.cadecode.xboot.starter.web.annotation.ApiFormat;
 import com.github.cadecode.xboot.starter.web.enums.WebErrorEnum;
@@ -56,20 +57,11 @@ public class ApiResultAdvisor implements ResponseBodyAdvice<Object> {
      * @return 经过包装的 body
      */
     private Object apiResultFormat(MethodParameter returnType, Object body, ServerHttpResponse response) {
-        // 是否需要包装标记
-        boolean formatFlag;
-        // 获取方法上的 ApiFormat 注解
-        ApiFormat formatM = returnType.getMethodAnnotation(ApiFormat.class);
-        // 以方法上注解为主
-        if (Objects.nonNull(formatM)) {
-            formatFlag = formatM.value();
-        } else {
-            // 获取类上的 ApiFormat 注解
-            ApiFormat formatC = returnType.getContainingClass().getAnnotation(ApiFormat.class);
-            formatFlag = Objects.nonNull(formatC) && formatC.value();
-        }
-        // 不需要包装，直接返回
-        if (!formatFlag) {
+        // 方法上的注解优先，类上的兜底
+        ApiFormat apiFormat = AspectUtil.findAnnotation(returnType.getContainingClass(), returnType.getMethod(),
+                ApiFormat.class);
+        // 没有注解或注解为 false，直接返回
+        if (Objects.isNull(apiFormat) || !apiFormat.value()) {
             return body;
         }
         // 设置状态码为 200

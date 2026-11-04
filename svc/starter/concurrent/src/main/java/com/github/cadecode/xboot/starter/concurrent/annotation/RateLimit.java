@@ -11,11 +11,16 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 限流注解，基于 Guava RateLimiter
+ * <p>
+ * 可标在类或方法上，方法上的注解优先、类上的兜底；限流粒度是每个被注解的方法。
+ * <p>
+ * 回退粒度是「整条注解」：方法上只要标了 {@code @RateLimit}，就完全使用它的参数，不与类上的注解做属性合并
+ * （与 Spring 的 {@code @Transactional} 一致）。
  *
  * @author Cade Li
  * @date 2022/9/4
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RateLimit {

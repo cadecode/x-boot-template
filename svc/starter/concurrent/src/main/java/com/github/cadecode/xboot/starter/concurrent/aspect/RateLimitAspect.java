@@ -1,6 +1,7 @@
 package com.github.cadecode.xboot.starter.concurrent.aspect;
 
 import com.github.cadecode.xboot.common.exception.RateLimitException;
+import com.github.cadecode.xboot.common.util.AspectUtil;
 import com.github.cadecode.xboot.starter.concurrent.annotation.RateLimit;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
@@ -35,10 +36,14 @@ public class RateLimitAspect {
     @Before("pointCut()")
     public void rateLimit(JoinPoint point) {
         MethodSignature methodSignature = (MethodSignature) point.getSignature();
-        RateLimit rateLimit = methodSignature.getMethod().getAnnotation(RateLimit.class);
+        // 方法上的注解优先，类上的兜底
+        RateLimit rateLimit = AspectUtil.requireAnnotation(point.getTarget(), methodSignature.getMethod(),
+                RateLimit.class);
 
+        // 限流器粒度是「被切到的每个方法」，key 带上目标类，避免同一接口方法的不同实现共用限流器
+        String limiterKey = point.getTarget().getClass().getName() + '#' + methodSignature.toLongString();
         // 从缓存获取或创建 RateLimiter
-        RateLimiter rateLimiter = LIMITER_MAP.computeIfAbsent(methodSignature.toLongString(), m -> {
+        RateLimiter rateLimiter = LIMITER_MAP.computeIfAbsent(limiterKey, m -> {
             if (rateLimit.warmupMillis() < 0) {
                 return RateLimiter.create(rateLimit.limitPerSecond());
             }
