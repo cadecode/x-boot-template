@@ -1,8 +1,8 @@
 package com.github.cadecode.xboot.starter.mybatis.aspect;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.github.cadecode.xboot.common.exception.HelperException;
 import com.github.cadecode.xboot.common.util.SpringUtil;
 import com.github.cadecode.xboot.starter.mybatis.annotation.DataScope;
 import com.github.cadecode.xboot.starter.mybatis.spi.DataScopeResolver;
@@ -17,13 +17,13 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.Objects;
 
@@ -101,21 +101,25 @@ public class DataScopeAspect {
     }
 
     /**
-     * 按 bean 名取解析器；未指定名字时取容器里唯一的实现
+     * 取解析器：写了 bean 名按名字取；没写时用容器里唯一的实现，多个实现用标了 @Primary 的那个
      */
     private DataScopeResolver resolveResolver(String resolverName) {
         if (StrUtil.isNotBlank(resolverName)) {
             return SpringUtil.getBean(resolverName, DataScopeResolver.class);
         }
-        Collection<DataScopeResolver> resolvers = SpringUtil.getBeansOfType(DataScopeResolver.class).values();
-        if (CollUtil.isEmpty(resolvers)) {
+        // getIfUnique：只有一个实现时返回它；多个实现时返回 @Primary 那个；都不满足则 null
+        ObjectProvider<DataScopeResolver> provider =
+                SpringUtil.getBeanFactory().getBeanProvider(DataScopeResolver.class, true);
+        DataScopeResolver resolver = provider.getIfUnique();
+        if (Objects.nonNull(resolver)) {
+            return resolver;
+        }
+        if (SpringUtil.getBeanNamesForType(DataScopeResolver.class).length == 0) {
             return null;
         }
-        if (resolvers.size() > 1) {
-            throw new IllegalStateException("存在多个 DataScopeResolver，请在 @DataScope 上指定 resolverName："
-                    + Arrays.toString(SpringUtil.getBeanNamesForType(DataScopeResolver.class)));
-        }
-        return resolvers.iterator().next();
+        throw new HelperException("Multiple DataScopeResolver beans found, mark one with @Primary "
+                + "or set resolverName on @DataScope: {}",
+                Arrays.toString(SpringUtil.getBeanNamesForType(DataScopeResolver.class)));
     }
 
     private static String fieldOf(DataScope ann) {
