@@ -33,8 +33,6 @@ public class DynamicDsAutoConfig {
 
     @Bean
     public DynamicDs dynamicDs() {
-        log.warn("x-boot.dynamic-ds.enable=true，自研动态数据源与 dynamic-datasource 会各产生一个 DataSource bean，"
-                + "同时启用会让 @ConditionalOnSingleCandidate 失配；请二选一：关闭本开关，或关闭 dynamic-datasource");
         log.info("Checking dynamic datasource config");
         checkDynamicDsConfig();
         log.info("Starting to create dynamic datasource");
