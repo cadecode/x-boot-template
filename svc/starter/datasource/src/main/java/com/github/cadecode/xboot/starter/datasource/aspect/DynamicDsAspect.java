@@ -5,9 +5,9 @@ import com.github.cadecode.xboot.starter.datasource.annotation.DynamicDs;
 import com.github.cadecode.xboot.starter.datasource.dynamic.DynamicDsHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.annotation.Order;
@@ -33,29 +33,30 @@ public class DynamicDsAspect {
 
     /**
      * 切换数据源
+     * <p>
+     * 用 {@code @Around} 而不是 {@code @Before} + {@code @After}：压栈和弹栈必须在同一个方法里成对。
+     * 分成两个通知时，key 不存在的那次不压栈，但 {@code @After} 照样弹栈，会把外层的 key 弹掉，
+     * 后续 SQL 就落回默认库。
      */
-    @Before("pointCut()")
-    public void switchDataSource(JoinPoint point) {
+    @Around("pointCut()")
+    public Object switchDataSource(ProceedingJoinPoint point) throws Throwable {
         // 获取方法上的注解
         String dataSourceKey = getDataSourceKey(point);
-        // 设置数据源
+        // key 不在配置里就不切换，原样执行
         if (!DynamicDsHolder.containDataSourceKey(dataSourceKey)) {
             log.info("Switch datasource fail，{} not found", dataSourceKey);
-            return;
+            return point.proceed();
         }
         DynamicDsHolder.setDataSourceKey(dataSourceKey);
         String methodName = point.getSignature().getDeclaringTypeName() + '.' + point.getSignature().getName();
         log.info("Switch datasource to {}，execute method [{}]", dataSourceKey, methodName);
-    }
-
-    /**
-     * 重置数据源
-     */
-    @After("pointCut()")
-    public void resetDataSource(JoinPoint point) {
-        // 将数据源恢复为之前的数据源
-        DynamicDsHolder.clearDataSourceKey();
-        log.info("Reset datasource to {}", DynamicDsHolder.getDataSourceKey());
+        try {
+            return point.proceed();
+        } finally {
+            // 将数据源恢复为之前的数据源
+            DynamicDsHolder.clearDataSourceKey();
+            log.info("Reset datasource to {}", DynamicDsHolder.getDataSourceKey());
+        }
     }
 
     /**
