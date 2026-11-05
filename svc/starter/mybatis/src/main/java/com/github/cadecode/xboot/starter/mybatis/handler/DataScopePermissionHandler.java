@@ -7,8 +7,8 @@ import com.github.cadecode.xboot.starter.mybatis.aspect.DataScopeAspect.DataScop
 import com.github.cadecode.xboot.starter.mybatis.spi.DataScopeResolver;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 
@@ -49,6 +49,7 @@ public class DataScopePermissionHandler implements MultiDataPermissionHandler {
         if (values.isEmpty()) {
             return null;
         }
-        return new InExpression(new Column(param.getField()), new ExpressionList<>(values));
+        // 右侧必须是 ParenthesedExpressionList：ExpressionList 渲染出来没有括号，会拼出 `age IN '27'`
+        return new InExpression(new Column(param.getField()), new ParenthesedExpressionList<>(values));
     }
 }
