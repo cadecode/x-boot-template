@@ -23,10 +23,10 @@
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
-        <!--数据权限/分页拦截器所在模块，选 4.9 版以兼容 pagehelper-->
+        <!--数据权限/分页拦截器所在模块-->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-jsqlparser-4.9</artifactId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
         </dependency>
         <!--aop，数据权限注解切面-->
         <dependency>
@@ -37,10 +37,21 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
         </dependency>
-        <!--pagehelper 分页，用原生包以避开 pagehelper-spring-boot-starter 的 Boot 2 依赖-->
+        <!--pagehelper 分页，用原生包以避开 pagehelper-spring-boot-starter 的 Boot 2 依赖；
+            自带 jsqlparser 排掉，改由 sqlparser5.1 适配模块对接 jsqlparser 5.x-->
         <dependency>
             <groupId>com.github.pagehelper</groupId>
             <artifactId>pagehelper</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.jsqlparser</groupId>
+                    <artifactId>jsqlparser</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>sqlparser5.1</artifactId>
         </dependency>
     </dependencies>
 
