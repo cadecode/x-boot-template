@@ -2,9 +2,9 @@ package com.github.cadecode.xboot.starter.mybatis.config;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionInterceptor;
 import com.github.cadecode.xboot.starter.mybatis.handler.BaseEntityFillHandler;
 import com.github.cadecode.xboot.starter.mybatis.handler.DataScopePermissionHandler;
+import com.github.cadecode.xboot.starter.mybatis.interceptor.DataScopePermissionInterceptor;
 import com.github.cadecode.xboot.starter.mybatis.spi.DataScopeResolver;
 import com.github.cadecode.xboot.starter.mybatis.spi.EntityFillResolver;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,8 @@ import org.springframework.core.annotation.Order;
 /**
  * MyBatis-Plus 配置
  * <p>
- * 数据权限用 MP 的 {@link DataPermissionInterceptor}：SQL 里的每张表都会回调
+ * 数据权限用 {@link DataScopePermissionInterceptor}（MP {@code DataPermissionInterceptor} 的子类，
+ * 没标注解时跳过 SQL 解析）：SQL 里的每张表都会回调
  * {@link DataScopePermissionHandler}，只有标注了 {@code @DataScope} 且命中表名时才追加条件。
  * <p>
  * 拦截器顺序：MyBatis {@code InterceptorChain.pluginAll} 从前往后逐个包装，<b>列表靠后者在最外层、先执行</b>；
@@ -42,8 +43,8 @@ public class MybatisPlusConfig {
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        interceptor.addInnerInterceptor(new DataPermissionInterceptor(new DataScopePermissionHandler()));
-        log.info("Create MybatisPlusInterceptor with DataPermissionInterceptor");
+        interceptor.addInnerInterceptor(new DataScopePermissionInterceptor(new DataScopePermissionHandler()));
+        log.info("Create MybatisPlusInterceptor with DataScopePermissionInterceptor");
         return interceptor;
     }
 
