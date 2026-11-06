@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.event;
+package com.github.cadecode.xboot.main.common.extension.event;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

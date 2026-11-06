@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.event;
+package com.github.cadecode.xboot.main.common.extension.event;
 
 /**
  * Event Demo 事件对象

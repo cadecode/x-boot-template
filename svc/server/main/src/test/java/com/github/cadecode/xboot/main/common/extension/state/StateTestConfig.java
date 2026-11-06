@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.state;
+package com.github.cadecode.xboot.main.common.extension.state;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.statemachine.config.EnableStateMachineFactory;

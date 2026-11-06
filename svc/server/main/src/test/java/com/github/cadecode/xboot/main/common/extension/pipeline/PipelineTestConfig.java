@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.pipeline;
+package com.github.cadecode.xboot.main.common.extension.pipeline;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.TestConfiguration;

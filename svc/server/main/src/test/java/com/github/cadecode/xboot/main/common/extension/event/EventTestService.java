@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.event;
+package com.github.cadecode.xboot.main.common.extension.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.plugin;
+package com.github.cadecode.xboot.main.common.extension.plugin;
 
 import com.github.cadecode.xboot.common.enums.ExtensionType;
 import com.github.cadecode.xboot.common.extension.plugin.PluginContext;

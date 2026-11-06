@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.pipeline;
+package com.github.cadecode.xboot.main.common.extension.pipeline;
 
 import com.github.cadecode.xboot.common.enums.ExtensionType;
 import lombok.Getter;

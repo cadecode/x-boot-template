@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.pipeline;
+package com.github.cadecode.xboot.main.common.extension.pipeline;
 
 import com.github.cadecode.xboot.common.extension.pipeline.filter.AbstractPipelineFilter;
 import lombok.extern.slf4j.Slf4j;

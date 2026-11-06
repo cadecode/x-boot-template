@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.state;
+package com.github.cadecode.xboot.main.common.extension.state;
 
 /**
  * 事件枚举（Demo）

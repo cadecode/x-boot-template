@@ -1,17 +1,21 @@
-package com.github.cadecode.xboot.main.demo.plugin;
+package com.github.cadecode.xboot.main.common.extension.plugin;
 
 import com.github.cadecode.xboot.common.enums.ExtensionType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Plugin Demo 无匹配类型（用于验证抛异常场景）
+ * Plugin Demo 类型枚举
  *
  * @author Cade Li
  * @since 2026/7/4
  */
 @Getter
 @RequiredArgsConstructor
-public class PluginTestUnknownType implements ExtensionType {
+public enum PluginTestType implements ExtensionType {
+    TYPE_A("A"),
+    TYPE_B("B"),
+    ;
+
     private final String type;
 }

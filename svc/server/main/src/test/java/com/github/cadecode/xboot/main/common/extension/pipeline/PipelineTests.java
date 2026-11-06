@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.pipeline;
+package com.github.cadecode.xboot.main.common.extension.pipeline;
 
 import com.github.cadecode.xboot.common.exception.ExtensionException;
 import com.github.cadecode.xboot.common.extension.pipeline.PipelineExecutor;

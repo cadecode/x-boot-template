@@ -1,4 +1,4 @@
-package com.github.cadecode.xboot.main.demo.state;
+package com.github.cadecode.xboot.main.common.extension.state;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
