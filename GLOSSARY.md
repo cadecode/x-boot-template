@@ -7,7 +7,7 @@
 ### 分层与模块
 
 **starter**:
-一个技术一个可插拔的自动配置模块（web、cache、concurrent、datasource、swagger、actuator），只做集成与默认配置，不含业务代码。
+一个技术一个可插拔的自动配置模块（web、cache、concurrent、datasource、mybatis、swagger、actuator），只做集成与默认配置，不含业务代码。
 _Avoid_: plugin module, extension module
 
 **framework**:
@@ -23,7 +23,7 @@ _Avoid_: utils module
 _Avoid_: parent pom（`x-boot-parent` 是它的子模块，两者别混）
 
 **server/main**:
-唯一可启动的业务服务模块（`MainApplication`），端口 8080，demo 代码与测试都放这里。
+唯一可启动的业务服务模块（`MainApplication`）。全部测试都放这里，测试子包按被测模块分组（`common/…`、`starter/…`）。
 _Avoid_: admin（旧名，已重命名）
 
 ### 扩展机制
@@ -97,7 +97,7 @@ _Avoid_: user context, login user holder
 _Avoid_: row filter, permission interceptor
 
 **分页执行者**:
-本项目分页仍由 PageHelper 完成（`PageHelper.startPage(...).doSelectPageInfo(...)`）。starter 为数据权限引入了 `mybatis-plus-jsqlparser-4.9`（jsqlparser 4.9，pagehelper 6.1.0 在 4.9 上实测可用；5.2 会让 CTE 的 count 改写 `NoSuchMethodError`），但 MP 的分页插件没有注册，`selectPage(IPage)` 是不分页的（不报错，total 为 0）。两者都改写 SQL，不能同时注册，否则拼出 `LIMIT ? LIMIT ?`。
+本项目分页由 PageHelper 完成（`PageHelper.startPage(...).doSelectPageInfo(...)`）。MP 的 `PaginationInnerInterceptor` 不注册，`selectPage(IPage)` 不分页也不报错（返回全表、`total` 为 0）。两个分页器都改写 SQL，不能同时注册，否则拼出 `LIMIT ? LIMIT ?`。
 _Avoid_: MP pagination, selectPage
 
 **限流注解**:

@@ -1,8 +1,12 @@
 # 数据权限用 MP 的 DataPermissionInterceptor
 
+> **Status**: 版本选型部分（jsqlparser 4.9 与 `mybatis-plus-jsqlparser-4.9`）已被 [ADR 0006](./0006-jsqlparser-5-with-pagehelper-adapter.md) 更新；权限模型与 `@Order` 顺序结论仍有效。
+
 移植 `uni-boot-cloud` 的 `@DataScope` 数据权限，但实现落在 MyBatis-Plus 官方 SPI 上，并按 MP 3.5.15 的新 API 重写。
 
 ## 依赖
+
+> 已被 [ADR 0006](./0006-jsqlparser-5-with-pagehelper-adapter.md) 更新：现在引 `mybatis-plus-jsqlparser` + jsqlparser 5.2 + `sqlparser5.1` 适配模块。以下保留为当时的判断记录。
 
 `DataPermissionInterceptor` / `MultiDataPermissionHandler` 自 MP 3.5.9 起从 `mybatis-plus-extension` 拆到 `mybatis-plus-jsqlparser`。该模块有两个产物，对应两代 jsqlparser：
 
