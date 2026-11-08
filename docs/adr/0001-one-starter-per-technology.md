@@ -1,6 +1,6 @@
 # 一个技术一个 starter，由 framework 统一聚合
 
-后端按「dependency（BOM）→ common → starter/* → framework → server/*」分层。每个集成技术单独一个 starter 模块（web、cache、concurrent、datasource、mybatis、swagger、actuator），只放自动配置与默认值；`framework` 依赖它们全部并提供 `x-boot.framework` 统一配置；业务模块只依赖 `framework`。这样换掉某个技术只需删掉一个 starter 与 framework 里的一行依赖，业务代码无需改动，代价是模块数量多、IDE 里有 10 个小模块。
+后端按「dependency（BOM）→ common → starter/* → framework → server/*」分层。每个集成技术单独一个 starter 模块（web、cache、concurrent、datasource、mybatis、swagger、actuator），只放自动配置与默认值；`framework` 聚合业务默认要用的那几个（当前是 web、swagger、datasource、mybatis）并提供 `x-boot.framework` 统一配置，其余（cache、concurrent、actuator、job）按需由业务模块自行依赖 —— 它们要么会占端口、要么只在特定业务里用得上，不该成为每个服务的默认负担。这样换掉某个技术只需删掉一个 starter 与 framework 里的一行依赖，业务代码无需改动，代价是模块数量多、IDE 里有 10 个小模块。
 
 ## Considered Options
 
