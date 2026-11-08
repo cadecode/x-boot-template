@@ -18,6 +18,7 @@
         <module>cache</module>
         <module>concurrent</module>
         <module>datasource</module>
+        <module>job</module>
         <module>mybatis</module>
         <module>web</module>
         <module>swagger</module>

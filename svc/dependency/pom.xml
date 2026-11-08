@@ -26,6 +26,7 @@
         <!-- jsqlparser 5.x 由 pagehelper 的 sqlparser5.1 适配模块兼容；MP 用默认同名产物 -->
         <jsqlparser.version>5.2</jsqlparser.version>
         <pagehelper.version>6.1.1</pagehelper.version>
+        <xxl-job.version>3.5.0</xxl-job.version>
         <swagger.version>2.2.19</swagger.version>
         <knife4j.version>4.4.0</knife4j.version>
         <spring-plugin.version>2.0.0.RELEASE</spring-plugin.version>
@@ -194,6 +195,12 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>transmittable-thread-local</artifactId>
                 <version>${ttl.version}</version>
+            </dependency>
+            <!--xxl-job 调度执行器-->
+            <dependency>
+                <groupId>com.xuxueli</groupId>
+                <artifactId>xxl-job-core</artifactId>
+                <version>${xxl-job.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
