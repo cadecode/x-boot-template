@@ -7,7 +7,7 @@
 ### 分层与模块
 
 **starter**:
-一个技术一个可插拔的自动配置模块（web、cache、concurrent、datasource、mybatis、swagger、actuator），只做集成与默认配置，不含业务代码。
+一个技术一个可插拔的自动配置模块（web、cache、concurrent、datasource、job、mybatis、swagger、actuator），只做集成与默认配置，不含业务代码。
 _Avoid_: plugin module, extension module
 
 **framework**:

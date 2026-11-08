@@ -67,11 +67,24 @@
 - **`ReturnT` 被整体注释**：`util/deprecated/ReturnT.java` 非注释行数为 0，同目录 12 个 util 文件全部如此。成败改用 `XxlJobHelper.handleSuccess()` / `handleFail()`
 - **`IJobHandler.execute(String)` 改成 `execute()`**
 - **`accessToken` 从可选变必填**
-- **`logRetentionDays` 默认值 0 → 30**：uni-boot 用 `int` 字段，会把框架新默认值覆盖回 0；而 `JobLogFileCleanThread` 在 `logRetentionDays < 3` 时直接 return，等于日志永不清理。移植时字段类型必须是 `Integer`，默认 30
+- **`logRetentionDays` 默认值 0 → 30**：字段用 `int` 会把框架默认值覆盖回 0；而 `JobLogFileCleanThread` 在 `logRetentionDays < 3` 时直接 return，等于日志永不清理。字段必须是 `Integer`，未配置时不调用 setter
+- **`logpath` 不能传 null**：`XxlJobExecutor.logPath` 有默认值 `/data/applogs/xxl-job/jobhandler`，`setLogPath(null)` 会把它覆盖掉；3.5.0 的 `XxlJobFileAppender.initLogPath` 遇空值直接抛 `xxl-job logPath cannot be empty`（2.4.0 只是跳过赋值）。未配置时不能调用这个 setter
 - **包结构重排**：`biz/*` → `openapi/{admin,executor}/*`，`enums` → `constant`，`XxxThread` → `XxxThreadHelper`
 - **`jakarta.annotation-api` 取代 `javax.annotation-api`**
 
 `XxlJobSpringExecutor` 的 8 个 setter（`adminAddresses`、`accessToken`、`appname`、`address`、`ip`、`port`、`logPath`、`logRetentionDays`）全部保留，所以 uni-boot 的自动配置类本身不用改。
+
+## starter 里多给的两个工具类
+
+`XxlJobUtil`（静态，`util` 包）：
+
+- `shard(List)`：按 `shardIndex / shardTotal` 取模切分；不在任务上下文或 `shardTotal <= 1` 时原样返回（`XxlJobHelper.getShardIndex()` 在无上下文时返回 -1）
+- `getJsonParam(Class[, defaultValue])`：用 `common` 的 `JacksonUtil` 反序列化任务参数；参数为空返回默认值，解析失败抛 `IllegalArgumentException` 并带上原始串
+- `getParamList()`：拆逗号分隔参数，去空白、忽略空项
+
+`XxlJobAdminKit`（注入，`util` 包）：包装 3.5.0 新增的 `AdminJobBiz`，提供 `triggerJob / startJob / stopJob / removeJob / addJob / updateJob`，把 `Response` 的成败检查收敛成 `GeneralException`。
+
+限制：`AdminJobBiz` 是 3.5.0 才有的 openapi，调度中心必须也是 3.5.0 及以上，否则请求会 404。代理的地址拼接与 `XxlJobExecutor` 一致（`addresses + "/api"`，多地址只取第一个），已用探针确认实际请求打到 `/api/triggerJob`、`/api/stopJob`。
 
 ## Considered Options
 
