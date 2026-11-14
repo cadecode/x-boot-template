@@ -8,6 +8,10 @@
 
 代价必须知道：`common` 与 `starter` 模块自身没有测试，`mvn test -pl svc/common` 是空跑，改 `common` 只能从根目录起整个应用验证。
 
+## 适用范围
+
+这条约束管的是业务应用（`server/main`）。有独立启动类的开发期工具模块（当前是 `server/codegen`）把测试放在自己的 `src/test` 下：`@SpringBootTest` 用 `AnnotatedClassFinder` 从测试类的包向上找 `@SpringBootConfiguration`，工具模块找到的是自己的启动类；搬到 `server/main` 反而要给业务模块加一条对工具模块的依赖，不划算。
+
 ## Considered Options
 
 - **下沉到各模块的 `src/test`**：模块级回归生效、无 split package、模块独立发版时测试跟着走。但每个模块要加 test 依赖，且 `common` / `starter` 没有启动类，`@SpringBootTest` 得改写成 `ApplicationContextRunner`；`MybatisTestUser*` 这类夹具被 mybatis 与 datasource 两组共用，还要额外造一个 test-support 模块。
