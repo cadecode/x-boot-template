@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: @profileActive@
+  application:
+    name: server-codegen
+  main:
+    # 开发期工具，不起 web 容器
+    web-application-type: none

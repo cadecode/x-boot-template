@@ -15,6 +15,7 @@
 
     <modules>
         <module>main</module>
+        <module>codegen</module>
     </modules>
 
 </project>

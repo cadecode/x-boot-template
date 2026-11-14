@@ -21,6 +21,8 @@
         <spring-boot-admin.version>3.2.3</spring-boot-admin.version>
         <druid.version>1.2.21</druid.version>
         <p6spy.version>3.9.1</p6spy.version>
+        <!--oracle 驱动；mysql/postgresql 的版本由 spring-boot-dependencies 管-->
+        <ojdbc.version>23.5.0.24.07</ojdbc.version>
         <dynamic-datasource.version>4.5.0</dynamic-datasource.version>
         <mybatis-plus.version>3.5.15</mybatis-plus.version>
         <!-- jsqlparser 5.x 由 pagehelper 的 sqlparser5.1 适配模块兼容；MP 用默认同名产物 -->
@@ -113,6 +115,12 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid-spring-boot-3-starter</artifactId>
                 <version>${druid.version}</version>
+            </dependency>
+            <!--oracle 驱动，jdbc 11 对应 JDK 11+-->
+            <dependency>
+                <groupId>com.oracle.database.jdbc</groupId>
+                <artifactId>ojdbc11</artifactId>
+                <version>${ojdbc.version}</version>
             </dependency>
             <!--p6spy，SQL 日志/慢 SQL-->
             <dependency>
