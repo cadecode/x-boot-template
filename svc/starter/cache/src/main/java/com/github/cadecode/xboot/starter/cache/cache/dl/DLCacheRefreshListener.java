@@ -2,7 +2,7 @@ package com.github.cadecode.xboot.starter.cache.cache.dl;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
 import com.github.cadecode.xboot.starter.cache.listener.RedisMessageListener;
-import com.github.cadecode.xboot.starter.cache.util.RedisKit;
+import com.github.cadecode.xboot.starter.cache.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
@@ -37,7 +37,7 @@ public class DLCacheRefreshListener extends RedisMessageListener {
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        DLCacheRefreshMsg refreshMsg = (DLCacheRefreshMsg) RedisKit.getTemplate().getValueSerializer().deserialize(message.getBody());
+        DLCacheRefreshMsg refreshMsg = (DLCacheRefreshMsg) RedisUtil.getTemplate().getValueSerializer().deserialize(message.getBody());
         if (Objects.isNull(refreshMsg)) {
             return;
         }
